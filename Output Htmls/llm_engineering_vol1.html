@@ -1,0 +1,1250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LLM Engineering — A Practitioner's Reference · Volume 1</title>
+
+<!-- MathJax 3 — config block must appear BEFORE the loader script -->
+<script>
+  window.MathJax = {
+    tex: {
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']],
+      processEscapes: true
+    },
+    svg: { fontCache: 'global' },
+    options: {
+      skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+  };
+</script>
+<script id="MathJax-script" async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+</script>
+
+<!-- Prism.js core + autoloader (theme styles are inline below) -->
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+
+<!-- Mermaid -->
+<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+
+<style>
+  /* ---------- PAGE & TYPOGRAPHY ---------- */
+  @page { size: A4; margin: 20mm 18mm 22mm 18mm; }
+  html { hyphens: auto; -webkit-hyphens: auto; }
+  *, *::before, *::after { box-sizing: border-box; }
+
+  body {
+    font-family: Inter, "Segoe UI", system-ui, -apple-system, sans-serif;
+    font-size: 12pt;
+    line-height: 1.55;
+    color: #1A1A1A;
+    background: #FFFFFF;
+    text-align: left;
+    margin: 0;
+    padding: 0;
+  }
+
+  p { margin: 0 0 8pt 0; }
+  ul, ol { margin: 0 0 8pt 0; padding-left: 22px; }
+  li { margin: 0 0 3pt 0; }
+  li > p { margin: 0; }
+
+  h1, h2, h3, h4 {
+    font-family: inherit;
+    color: #0F2A4A;
+    text-wrap: balance;
+  }
+  h1 {
+    font-size: 32pt;
+    font-weight: 700;
+    line-height: 1.15;
+    margin: 0 0 8pt 0;
+  }
+  h2 {
+    font-size: 20pt;
+    font-weight: 600;
+    margin: 24pt 0 8pt 0;
+    padding-bottom: 6pt;
+    border-bottom: 1px solid #E5E9EF;
+  }
+  h3 {
+    font-size: 14pt;
+    font-weight: 600;
+    color: #1F6FEB;
+    margin: 18pt 0 4pt 0;
+  }
+  h4 {
+    font-size: 12pt;
+    font-weight: 600;
+    margin: 10pt 0 4pt 0;
+  }
+
+  /* ---------- CODE ---------- */
+  pre, code, kbd, samp {
+    font-family: "JetBrains Mono", "Fira Code", Consolas, monospace;
+  }
+  pre {
+    position: relative;
+    background: #F4F6FA;
+    border-radius: 6px;
+    padding: 12px 14px;
+    font-size: 11pt;
+    line-height: 1.45;
+    margin: 10pt 0 14pt 0;
+    overflow: auto;
+  }
+  pre[data-lang]::before {
+    content: attr(data-lang);
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    font-size: 9pt;
+    letter-spacing: 0.08em;
+    color: #4A5568;
+    text-transform: uppercase;
+    font-family: inherit;
+    font-weight: 600;
+  }
+  :not(pre) > code {
+    font-size: 11pt;
+    background: #F4F6FA;
+    padding: 1px 4px;
+    border-radius: 4px;
+  }
+
+  /* Minimal Prism theme tuned to the document palette */
+  .token.comment, .token.prolog, .token.doctype, .token.cdata { color: #6B7280; font-style: italic; }
+  .token.punctuation { color: #1A1A1A; }
+  .token.property, .token.tag, .token.constant, .token.symbol, .token.deleted { color: #B45309; }
+  .token.boolean, .token.number { color: #1F8B4C; }
+  .token.selector, .token.attr-name, .token.string, .token.char, .token.builtin, .token.inserted { color: #1F6FEB; }
+  .token.operator, .token.entity, .token.url, .language-css .token.string, .style .token.string, .token.variable { color: #0F2A4A; }
+  .token.atrule, .token.attr-value, .token.function, .token.class-name { color: #0F2A4A; font-weight: 600; }
+  .token.keyword { color: #1F6FEB; font-weight: 600; }
+  .token.regex, .token.important { color: #B45309; }
+  .token.important, .token.bold { font-weight: bold; }
+  .token.italic { font-style: italic; }
+
+  /* ---------- FIGURES & TABLES ---------- */
+  figure {
+    margin: 12pt 0 16pt 0;
+    text-align: center;
+  }
+  figure .mermaid {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+  }
+  figure svg, figure .mermaid > svg, figure img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+  }
+  figcaption {
+    font-size: 10.5pt;
+    color: #4A5568;
+    font-style: italic;
+    margin-top: 6pt;
+    text-align: center;
+  }
+  figcaption strong {
+    font-style: normal;
+    color: #0F2A4A;
+    margin-right: 4px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 4pt 0 14pt 0;
+    font-size: 11pt;
+  }
+  table caption {
+    font-size: 10.5pt;
+    color: #4A5568;
+    font-style: italic;
+    text-align: left;
+    caption-side: top;
+    margin-bottom: 6pt;
+  }
+  table caption strong { color: #0F2A4A; font-style: normal; margin-right: 4px; }
+  thead th {
+    background: #0F2A4A;
+    color: #FFFFFF;
+    font-weight: 600;
+    text-align: left;
+    padding: 8px 12px;
+    border-bottom: 1px solid #E5E9EF;
+  }
+  tbody td {
+    padding: 8px 12px;
+    border-bottom: 1px solid #E5E9EF;
+    vertical-align: top;
+  }
+  tbody tr:nth-child(even) td { background: #FAFBFD; }
+  tbody tr:last-child td { border-bottom: 1px solid #E5E9EF; }
+
+  /* ---------- CALLOUTS ---------- */
+  .callout {
+    background: #F4F6FA;
+    border-left: 3px solid #1F6FEB;
+    padding: 12px 16px;
+    margin: 12pt 0;
+    border-radius: 0 4px 4px 0;
+  }
+  .callout.pitfall { border-left-color: #B45309; }
+  .callout.tip     { border-left-color: #1F8B4C; }
+  .callout-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 600;
+    font-size: 11pt;
+    color: #0F2A4A;
+    margin-bottom: 4pt;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .callout.pitfall .callout-title { color: #B45309; }
+  .callout.tip     .callout-title { color: #1F8B4C; }
+  .callout-icon {
+    width: 14px;
+    height: 14px;
+    flex: 0 0 14px;
+  }
+  .callout p:last-child { margin-bottom: 0; }
+
+  /* ---------- MATH BLOCK ---------- */
+  .math-display {
+    text-align: center;
+    margin: 12pt 0;
+    overflow-x: auto;
+  }
+
+  /* ---------- COVER ---------- */
+  .cover {
+    height: 257mm;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 0;
+  }
+  .cover-spacer-top { flex: 1; min-height: 70mm; }
+  .cover-rule {
+    width: 40%;
+    height: 2px;
+    background: #0F2A4A;
+    margin-bottom: 14pt;
+  }
+  .cover-title {
+    font-size: 44pt;
+    font-weight: 700;
+    color: #0F2A4A;
+    line-height: 1.1;
+    text-wrap: balance;
+    margin: 0 0 10pt 0;
+  }
+  .cover-subtitle {
+    font-size: 16pt;
+    font-weight: 400;
+    color: #4A5568;
+    margin: 0;
+  }
+  .cover-decor {
+    margin-top: auto;
+    margin-bottom: 14pt;
+    width: 100%;
+    text-align: left;
+  }
+  .cover-date {
+    font-size: 11pt;
+    color: #4A5568;
+  }
+
+  /* ---------- PART BANNER ---------- */
+  .part {
+    /* page break enforced by print rule below */
+  }
+  .part-banner {
+    background: #F4F6FA;
+    border-left: 3px solid #1F6FEB;
+    padding: 16px 18px;
+    margin: 0 0 18pt 0;
+  }
+  .part-eyebrow {
+    font-size: 11pt;
+    font-weight: 600;
+    color: #1F6FEB;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin: 0 0 4pt 0;
+  }
+  .part-banner h1 { margin: 0 0 6pt 0; }
+  .part-deck {
+    font-size: 12.5pt;
+    font-style: italic;
+    color: #4A5568;
+    margin: 0;
+  }
+
+  /* ---------- VOLUME CONTENTS ---------- */
+  .toc { margin-top: 20pt; }
+  .toc-row {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin: 7pt 0;
+    font-size: 12pt;
+  }
+  .toc-num {
+    font-weight: 600;
+    color: #1F6FEB;
+    min-width: 55px;
+    flex: 0 0 55px;
+  }
+  .toc-title {
+    color: #0F2A4A;
+    font-weight: 500;
+  }
+  .toc-dots {
+    flex: 1;
+    border-bottom: 1px dotted #4A5568;
+    transform: translateY(-3px);
+    margin: 0 4px;
+  }
+  .toc-page { color: #4A5568; min-width: 24px; text-align: right; }
+  .companion-note {
+    margin-top: 30pt;
+    background: #F4F6FA;
+    border-left: 3px solid #1F6FEB;
+    padding: 14px 16px;
+    border-radius: 0 4px 4px 0;
+  }
+  .companion-note h3 {
+    margin: 0 0 6pt 0;
+    color: #0F2A4A;
+    font-size: 12pt;
+  }
+  .companion-note ul { margin: 4pt 0 0 0; padding-left: 20px; }
+  .companion-note li { font-size: 11pt; color: #1A1A1A; margin-bottom: 3pt; }
+
+  /* ---------- RUNNING HEADER / FOOTER (print only) ---------- */
+  @page :first {
+    margin: 20mm 18mm 22mm 18mm;
+    @top-left { content: ""; }
+    @top-right { content: ""; }
+    @bottom-left { content: ""; }
+    @bottom-center { content: ""; }
+  }
+  @page {
+    @top-left { content: string(part-running); font-family: Inter, sans-serif; font-size: 9pt; color: #4A5568; }
+    @top-right { content: "LLM Engineering — A Practitioner's Reference · Volume 1"; font-family: Inter, sans-serif; font-size: 9pt; color: #4A5568; }
+    @bottom-left { content: "Volume 1 of 5"; font-family: Inter, sans-serif; font-size: 9pt; color: #4A5568; }
+    @bottom-center { content: counter(page) " / " counter(pages); font-family: Inter, sans-serif; font-size: 9pt; color: #4A5568; }
+  }
+  .part-running { string-set: part-running content(); display: none; }
+
+  /* ---------- SCREEN-ONLY ---------- */
+  .screen-only { display: block; }
+
+  /* ---------- PRINT RULES ---------- */
+  @media print {
+    .part { break-before: page !important; page-break-before: always !important; }
+
+    figure {
+      break-inside: avoid !important;
+      page-break-inside: avoid !important;
+      max-height: 200mm;
+      margin: 12pt 0 16pt 0;
+    }
+    figure .mermaid,
+    figure .mermaid > svg,
+    figure svg,
+    figure img {
+      max-width: 100% !important;
+      max-height: 180mm !important;
+      width: auto !important;
+      height: auto !important;
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      break-before: avoid !important;
+      page-break-before: avoid !important;
+      margin-top: 6pt;
+    }
+
+    pre {
+      break-inside: avoid !important;
+      page-break-inside: avoid !important;
+      max-height: 180mm;
+      overflow: hidden;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    .callout, .math-display {
+      break-inside: avoid !important;
+      page-break-inside: avoid !important;
+    }
+
+    table { break-inside: auto; }
+    thead { display: table-header-group; }
+    tfoot { display: table-footer-group; }
+    tr, td, th {
+      break-inside: avoid !important;
+      page-break-inside: avoid !important;
+    }
+
+    h1, h2, h3, h4 {
+      break-after: avoid !important;
+      page-break-after: avoid !important;
+      text-wrap: balance;
+    }
+
+    .section-banner, .part-banner {
+      break-after: avoid !important;
+      page-break-after: avoid !important;
+    }
+
+    p, li, dd { widows: 2; orphans: 2; }
+
+    .no-print { display: none !important; }
+
+    .cover { page: cover; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============================================================ -->
+<!-- COVER PAGE                                                    -->
+<!-- ============================================================ -->
+<section class="cover">
+  <div class="cover-spacer-top"></div>
+  <div>
+    <div class="cover-rule" aria-hidden="true"></div>
+    <h1 class="cover-title">LLM Engineering — A Practitioner's Reference</h1>
+    <p class="cover-subtitle"><em>Volume 1 · Foundations · Models · Adaptation</em></p>
+  </div>
+  <div class="cover-decor" aria-hidden="true">
+    <svg viewBox="0 0 600 100" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;">
+      <rect x="0"   y="46" width="600" height="2"  fill="#0F2A4A"/>
+      <rect x="0"   y="58" width="120" height="10" fill="#1F6FEB"/>
+      <rect x="140" y="58" width="60"  height="10" fill="#0F2A4A"/>
+      <rect x="210" y="58" width="200" height="10" fill="#1F6FEB" opacity="0.55"/>
+      <rect x="420" y="58" width="40"  height="10" fill="#0F2A4A"/>
+      <rect x="470" y="58" width="100" height="10" fill="#1F6FEB" opacity="0.35"/>
+      <g transform="translate(0,80)">
+        <rect x="0"   y="0" width="36"  height="6" fill="#0F2A4A" opacity="0.85"/>
+        <rect x="44"  y="0" width="80"  height="6" fill="#1F6FEB" opacity="0.55"/>
+        <rect x="132" y="0" width="22"  height="6" fill="#0F2A4A" opacity="0.7"/>
+        <rect x="162" y="0" width="160" height="6" fill="#1F6FEB" opacity="0.35"/>
+        <rect x="330" y="0" width="50"  height="6" fill="#0F2A4A" opacity="0.6"/>
+      </g>
+    </svg>
+  </div>
+  <div class="cover-date">2026 Edition</div>
+</section>
+
+<!-- ============================================================ -->
+<!-- "How to save as PDF" — screen-only callout                    -->
+<!-- ============================================================ -->
+<div class="screen-only no-print" style="margin: 24pt 0;">
+  <div class="callout">
+    <div class="callout-title">
+      <svg class="callout-icon" viewBox="0 0 24 24" fill="none" stroke="#1F6FEB" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      How to save this volume as a PDF
+    </div>
+    <p>Open this file in <strong>Chrome</strong> or Edge. Wait until every diagram and equation has finished rendering on screen. Press <strong>Ctrl+P / ⌘P</strong>. Set destination to <strong>"Save as PDF"</strong>. Under "More settings": <strong>Margins → Default</strong> (let the document's <code>@page</code> rule control margins — do not pick "None" or "Custom"), <strong>Paper size → A4</strong>, <strong>Scale → Default (100 %)</strong>, and <strong>enable "Background graphics"</strong> so banners and callout fills render. Then click <strong>Save</strong>.</p>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- VOLUME CONTENTS                                               -->
+<!-- ============================================================ -->
+<section class="part">
+  <span class="part-running">Volume contents</span>
+  <h1 style="margin-top: 0;">Volume contents</h1>
+  <p>This volume covers the technical vocabulary, the current model landscape, and the practice of taking a base checkpoint and turning it into a useful instruction-following system. It assumes prior familiarity with neural-network basics and PyTorch-style training loops.</p>
+
+  <div class="toc">
+    <div class="toc-row"><span class="toc-num">Part 1</span><span class="toc-title">Foundations refresher</span><span class="toc-dots"></span><span class="toc-page">3</span></div>
+    <div class="toc-row"><span class="toc-num">Part 2</span><span class="toc-title">Modern model landscape (2025-2026)</span><span class="toc-dots"></span><span class="toc-page">11</span></div>
+    <div class="toc-row"><span class="toc-num">Part 3</span><span class="toc-title">Adapting models — SFT, PEFT, alignment, distributed training</span><span class="toc-dots"></span><span class="toc-page">15</span></div>
+  </div>
+
+  <div class="companion-note">
+    <h3>Companion volumes</h3>
+    <ul>
+      <li><strong>Volume 2</strong> — Parts 4-6: Retrieval-Augmented Generation, agentic systems, inference optimization &amp; serving.</li>
+      <li><strong>Volume 3</strong> — Parts 7-9: production engineering, evaluation, safety &amp; security.</li>
+      <li><strong>Volume 4</strong> — Parts 10-12: MLOps &amp; LLMOps, multimodal, system-design playbook.</li>
+      <li><strong>Volume 5</strong> — Parts 13-15: trends, curated resources, glossary.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- PART 1 — FOUNDATIONS REFRESHER                                -->
+<!-- ============================================================ -->
+<section class="part" id="part-1">
+  <span class="part-running">Part 1 · Foundations refresher</span>
+  <div class="part-banner">
+    <p class="part-eyebrow">Part 1</p>
+    <h1>Foundations refresher</h1>
+    <p class="part-deck"><em>Vocabulary fixed in eight pages: enough to make the rest of the document unambiguous.</em></p>
+  </div>
+
+  <h2>1.1 Transformer architectures</h2>
+  <p>Three Transformer shapes coexist, but only one dominates current LLM practice. <strong>Encoder-only</strong> stacks (the BERT family) attend bidirectionally and are used for classification, span extraction, and dense retrieval. <strong>Encoder-decoder</strong> models (T5, BART, FLAN-T5) couple a bidirectional encoder to an autoregressive decoder via cross-attention; they were the standard for sequence-to-sequence work — translation, summarization, structured generation — through about 2022. <strong>Decoder-only</strong> stacks with causal masking — every token attends only to itself and its predecessors — now power virtually all general-purpose generative LLMs. The unified next-token-prediction objective, the simpler architecture, the cleaner scaling story, and the fact that decoder-only stacks subsume seq2seq tasks under prompted generation, all combined to push the field there.</p>
+
+  <p>Inside any of these shapes the basic block is the same: a self-attention sublayer, a position-wise feed-forward sublayer, normalization, and residual connections. The figure below shows a modern decoder block.</p>
+
+  <figure>
+    <div class="mermaid">
+flowchart TB
+    Tokens["Input tokens"] --> Embed["Token embedding<br/>+ RoPE position"]
+
+    subgraph Block["Decoder block × N"]
+      direction TB
+      N1["RMSNorm"] --> Attn["Causal self-attention<br/>(GQA / MLA)"]
+      Attn --> Add1["⊕ residual"]
+      Add1 --> N2["RMSNorm"]
+      N2 --> FFN["SwiGLU FFN"]
+      FFN --> Add2["⊕ residual"]
+    end
+
+    Embed --> N1
+    Add2 --> NF["Final RMSNorm"]
+    NF --> LM["LM head<br/>(unembedding)"]
+    LM --> Logits["Logits over vocab"]
+
+    classDef io fill:#E5E9EF,stroke:#0F2A4A,color:#0F2A4A
+    classDef op fill:#F4F6FA,stroke:#0F2A4A,color:#0F2A4A
+    classDef out fill:#FFFFFF,stroke:#1F6FEB,color:#0F2A4A
+    class Tokens,Logits io
+    class Embed,N1,Attn,Add1,N2,FFN,Add2,NF op
+    class LM out</div>
+    <figcaption><strong>Figure 1.1 ·</strong> Modern decoder-only block. Pre-norm RMSNorm, GQA or MLA attention, SwiGLU feed-forward, residual paths. The block repeats <em>N</em> times before a final norm and a tied or untied LM head produces vocabulary logits.</figcaption>
+  </figure>
+
+  <h2>1.2 Attention and its variants</h2>
+  <p>The atomic operation of every Transformer is scaled dot-product attention:</p>
+
+  <div class="math-display">
+    $$ \operatorname{Attention}(Q, K, V) = \operatorname{softmax}\!\left(\frac{QK^{\top}}{\sqrt{d_k}}\right) V $$
+  </div>
+
+  <p>For each query, we compute similarity against all keys, normalize via softmax, then take a weighted mix of values. The \(\sqrt{d_k}\) factor keeps the pre-softmax scores in a well-conditioned regime — without it, scores grow with the head dimension and the softmax saturates, killing gradients.</p>
+
+  <p>Multi-head attention runs this operation in parallel across <em>H</em> learned subspaces and concatenates the results. The variants below trade expressiveness against the size of the key-value cache, which dominates inference memory at long contexts.</p>
+
+  <ul>
+    <li><strong>MHA — Multi-head attention.</strong> Each head has its own Q, K, V projections. Maximum expressiveness, maximum KV-cache: <code>2 · L · H · d_h</code> floats per layer.</li>
+    <li><strong>MQA — Multi-query attention.</strong> All query heads share a single K and V projection. KV-cache shrinks by a factor of <em>H</em>. Quality drops measurably on hard tasks unless trained carefully.</li>
+    <li><strong>GQA — Grouped-query attention.</strong> Query heads form <em>G</em> groups, each sharing one K/V pair. Typical ratios are 8:1 or 4:1. The default in current open-weight stacks (Llama 3, Qwen 2.5/3, Mistral) — quality close to MHA, KV-cache close to MQA.</li>
+    <li><strong>MLA — Multi-head latent attention.</strong> Used by DeepSeek-V2 / V3. Compresses K and V into a low-rank latent that is cached in place of the full K/V tensors and reconstructed at attention time. Cuts KV-cache aggressively while retaining MHA-class quality.</li>
+  </ul>
+
+  <figure>
+    <svg viewBox="0 0 740 460" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Attention variants comparison">
+      <style>
+        .av-title { font: 600 14px Inter, "Segoe UI", sans-serif; fill: #0F2A4A; }
+        .av-sub   { font: 11px Inter, "Segoe UI", sans-serif; fill: #4A5568; }
+        .av-lbl   { font: 11px Inter, "Segoe UI", sans-serif; fill: #1A1A1A; }
+        .av-tag   { font: 600 10.5px Inter, "Segoe UI", sans-serif; fill: #4A5568; }
+        .av-q     { fill: #1F6FEB; stroke: #0F2A4A; stroke-width: 0.8; }
+        .av-k     { fill: #1F8B4C; stroke: #0F2A4A; stroke-width: 0.8; }
+        .av-v     { fill: #B45309; stroke: #0F2A4A; stroke-width: 0.8; }
+        .av-c     { fill: #6B7280; stroke: #0F2A4A; stroke-width: 0.8; }
+        .av-pane  { fill: #FFFFFF; stroke: #E5E9EF; stroke-width: 1; }
+        .av-link  { stroke: #4A5568; stroke-width: 0.8; fill: none; }
+      </style>
+
+      <!-- Legend -->
+      <g transform="translate(20,12)">
+        <rect x="0"   y="0" width="14" height="14" class="av-q"/><text x="20" y="11" class="av-lbl">Q head</text>
+        <rect x="80"  y="0" width="14" height="14" class="av-k"/><text x="100" y="11" class="av-lbl">K head</text>
+        <rect x="160" y="0" width="14" height="14" class="av-v"/><text x="180" y="11" class="av-lbl">V head</text>
+        <rect x="240" y="0" width="14" height="14" class="av-c"/><text x="260" y="11" class="av-lbl">Latent c (compressed K, V)</text>
+      </g>
+
+      <!-- Helper: each panel 340 x 210, drawn at (px,py) -->
+
+      <!-- Panel 1: MHA (top-left) -->
+      <g transform="translate(20,40)">
+        <rect class="av-pane" x="0" y="0" width="340" height="200" rx="4"/>
+        <text class="av-title" x="14" y="20">MHA — Multi-head attention</text>
+        <text class="av-sub" x="14" y="36">8 Q heads · 8 K heads · 8 V heads</text>
+        <!-- Q row -->
+        <text class="av-tag" x="14" y="68">Q</text>
+        <g transform="translate(40,56)">
+          <g><rect class="av-q" x="0"   y="0" width="22" height="18"/><rect class="av-q" x="28"  y="0" width="22" height="18"/>
+             <rect class="av-q" x="56"  y="0" width="22" height="18"/><rect class="av-q" x="84"  y="0" width="22" height="18"/>
+             <rect class="av-q" x="112" y="0" width="22" height="18"/><rect class="av-q" x="140" y="0" width="22" height="18"/>
+             <rect class="av-q" x="168" y="0" width="22" height="18"/><rect class="av-q" x="196" y="0" width="22" height="18"/></g>
+        </g>
+        <!-- K row -->
+        <text class="av-tag" x="14" y="110">K</text>
+        <g transform="translate(40,98)">
+          <g><rect class="av-k" x="0"   y="0" width="22" height="18"/><rect class="av-k" x="28"  y="0" width="22" height="18"/>
+             <rect class="av-k" x="56"  y="0" width="22" height="18"/><rect class="av-k" x="84"  y="0" width="22" height="18"/>
+             <rect class="av-k" x="112" y="0" width="22" height="18"/><rect class="av-k" x="140" y="0" width="22" height="18"/>
+             <rect class="av-k" x="168" y="0" width="22" height="18"/><rect class="av-k" x="196" y="0" width="22" height="18"/></g>
+        </g>
+        <!-- V row -->
+        <text class="av-tag" x="14" y="152">V</text>
+        <g transform="translate(40,140)">
+          <g><rect class="av-v" x="0"   y="0" width="22" height="18"/><rect class="av-v" x="28"  y="0" width="22" height="18"/>
+             <rect class="av-v" x="56"  y="0" width="22" height="18"/><rect class="av-v" x="84"  y="0" width="22" height="18"/>
+             <rect class="av-v" x="112" y="0" width="22" height="18"/><rect class="av-v" x="140" y="0" width="22" height="18"/>
+             <rect class="av-v" x="168" y="0" width="22" height="18"/><rect class="av-v" x="196" y="0" width="22" height="18"/></g>
+        </g>
+        <text class="av-sub" x="14" y="186">KV-cache: full · highest quality, highest memory</text>
+      </g>
+
+      <!-- Panel 2: MQA (top-right) -->
+      <g transform="translate(380,40)">
+        <rect class="av-pane" x="0" y="0" width="340" height="200" rx="4"/>
+        <text class="av-title" x="14" y="20">MQA — Multi-query attention</text>
+        <text class="av-sub" x="14" y="36">8 Q heads · 1 K · 1 V (broadcast to all Q)</text>
+        <text class="av-tag" x="14" y="68">Q</text>
+        <g transform="translate(40,56)">
+          <rect class="av-q" x="0"   y="0" width="22" height="18"/><rect class="av-q" x="28"  y="0" width="22" height="18"/>
+          <rect class="av-q" x="56"  y="0" width="22" height="18"/><rect class="av-q" x="84"  y="0" width="22" height="18"/>
+          <rect class="av-q" x="112" y="0" width="22" height="18"/><rect class="av-q" x="140" y="0" width="22" height="18"/>
+          <rect class="av-q" x="168" y="0" width="22" height="18"/><rect class="av-q" x="196" y="0" width="22" height="18"/>
+        </g>
+        <text class="av-tag" x="14" y="110">K</text>
+        <rect class="av-k" x="138" y="98" width="22" height="18"/>
+        <text class="av-tag" x="14" y="152">V</text>
+        <rect class="av-v" x="138" y="140" width="22" height="18"/>
+        <!-- broadcast lines -->
+        <g class="av-link">
+          <line x1="149" y1="116" x2="51"  y2="74"/>
+          <line x1="149" y1="116" x2="247" y2="74"/>
+        </g>
+        <text class="av-sub" x="14" y="186">KV-cache: 1/H · maximum compression, quality risk</text>
+      </g>
+
+      <!-- Panel 3: GQA (bottom-left) -->
+      <g transform="translate(20,250)">
+        <rect class="av-pane" x="0" y="0" width="340" height="200" rx="4"/>
+        <text class="av-title" x="14" y="20">GQA — Grouped-query attention</text>
+        <text class="av-sub" x="14" y="36">8 Q heads · 4 KV groups (2 Q per K/V)</text>
+        <text class="av-tag" x="14" y="68">Q</text>
+        <g transform="translate(40,56)">
+          <rect class="av-q" x="0"   y="0" width="22" height="18"/><rect class="av-q" x="28"  y="0" width="22" height="18"/>
+          <rect class="av-q" x="56"  y="0" width="22" height="18"/><rect class="av-q" x="84"  y="0" width="22" height="18"/>
+          <rect class="av-q" x="112" y="0" width="22" height="18"/><rect class="av-q" x="140" y="0" width="22" height="18"/>
+          <rect class="av-q" x="168" y="0" width="22" height="18"/><rect class="av-q" x="196" y="0" width="22" height="18"/>
+        </g>
+        <text class="av-tag" x="14" y="110">K</text>
+        <g transform="translate(54,98)">
+          <rect class="av-k" x="0"   y="0" width="22" height="18"/>
+          <rect class="av-k" x="56"  y="0" width="22" height="18"/>
+          <rect class="av-k" x="112" y="0" width="22" height="18"/>
+          <rect class="av-k" x="168" y="0" width="22" height="18"/>
+        </g>
+        <text class="av-tag" x="14" y="152">V</text>
+        <g transform="translate(54,140)">
+          <rect class="av-v" x="0"   y="0" width="22" height="18"/>
+          <rect class="av-v" x="56"  y="0" width="22" height="18"/>
+          <rect class="av-v" x="112" y="0" width="22" height="18"/>
+          <rect class="av-v" x="168" y="0" width="22" height="18"/>
+        </g>
+        <text class="av-sub" x="14" y="186">KV-cache: 1/2 · the production sweet-spot</text>
+      </g>
+
+      <!-- Panel 4: MLA (bottom-right) -->
+      <g transform="translate(380,250)">
+        <rect class="av-pane" x="0" y="0" width="340" height="200" rx="4"/>
+        <text class="av-title" x="14" y="20">MLA — Multi-head latent attention</text>
+        <text class="av-sub" x="14" y="36">8 Q heads · low-rank cached latent c</text>
+        <text class="av-tag" x="14" y="68">Q</text>
+        <g transform="translate(40,56)">
+          <rect class="av-q" x="0"   y="0" width="22" height="18"/><rect class="av-q" x="28"  y="0" width="22" height="18"/>
+          <rect class="av-q" x="56"  y="0" width="22" height="18"/><rect class="av-q" x="84"  y="0" width="22" height="18"/>
+          <rect class="av-q" x="112" y="0" width="22" height="18"/><rect class="av-q" x="140" y="0" width="22" height="18"/>
+          <rect class="av-q" x="168" y="0" width="22" height="18"/><rect class="av-q" x="196" y="0" width="22" height="18"/>
+        </g>
+        <text class="av-tag" x="14" y="110">c</text>
+        <g transform="translate(54,98)">
+          <rect class="av-c" x="0"  y="0" width="60" height="18"/>
+          <rect class="av-c" x="80" y="0" width="60" height="18"/>
+          <rect class="av-c" x="160" y="0" width="42" height="18"/>
+        </g>
+        <text class="av-tag" x="14" y="152">→ K,V</text>
+        <g transform="translate(54,140)">
+          <rect class="av-k" x="0"   y="0" width="22" height="18"/><rect class="av-v" x="28"  y="0" width="22" height="18"/>
+          <rect class="av-k" x="56"  y="0" width="22" height="18"/><rect class="av-v" x="84"  y="0" width="22" height="18"/>
+          <rect class="av-k" x="112" y="0" width="22" height="18"/><rect class="av-v" x="140" y="0" width="22" height="18"/>
+          <rect class="av-k" x="168" y="0" width="22" height="18"/><rect class="av-v" x="196" y="0" width="22" height="18"/>
+        </g>
+        <text class="av-sub" x="14" y="186">KV-cache: tiny latent · MHA-class quality</text>
+      </g>
+    </svg>
+    <figcaption><strong>Figure 1.2 ·</strong> Attention variants compared. Each panel shows Q, K, and V head allocation for an 8-head layer. The MLA panel shows a compact latent <em>c</em> stored in the cache, from which K and V are reconstructed on demand at attention time.</figcaption>
+  </figure>
+
+  <h2>1.3 The modern decoder block</h2>
+  <p>Most contemporary open-weight LLMs are remarkably similar inside. The block uses <strong>pre-norm</strong>, applying normalization <em>before</em> the sublayer rather than after — pre-norm trains stably at depth without warmup tricks. The norm is <strong>RMSNorm</strong>, which omits the mean-subtraction step of LayerNorm and is meaningfully cheaper while empirically as effective.</p>
+
+  <p>The feed-forward sublayer is a gated variant — <strong>SwiGLU</strong> or <strong>GeGLU</strong> — of the form \(\text{FFN}(x) = (\text{Swish}(xW_1) \odot xW_2)\,W_3\). Gating consistently outperforms a vanilla GELU FFN at the same parameter count. Because the gate adds a third projection, the hidden dimension is shrunk to roughly \(\tfrac{8}{3} d_{\text{model}}\) to keep the parameter count comparable to a 4× GELU MLP.</p>
+
+  <p>Combined with RoPE positional encoding (Section 1.6) and GQA or MLA attention, this is the recipe shared by Llama 3.x, Qwen 2.5 / 3, Mistral, Gemma 3, DeepSeek-V3 and most of their peers — modulo MoE routing or hybrid SSM layers. The architectural search has narrowed; the differentiation is in data, scale, and post-training.</p>
+
+  <h2>1.4 Tokenization</h2>
+  <p>An LLM does not see characters; it sees integer token IDs from a fixed vocabulary. The tokenizer is therefore the model's actual "input format," and tokenization decisions outlive any model checkpoint that depends on them.</p>
+
+  <ul>
+    <li><strong>Byte-Pair Encoding (BPE).</strong> Iteratively merges the most-frequent adjacent symbol pair into a new token. Used by GPT-2/3/4, Llama 2, Mistral. Implemented in Hugging Face <code>tokenizers</code> and OpenAI's <code>tiktoken</code>.</li>
+    <li><strong>SentencePiece.</strong> A library that treats raw text as a stream of bytes, language-agnostic, with both BPE and unigram-LM training algorithms. Standard for T5, Mistral, Gemma.</li>
+    <li><strong>Byte-level fall-back.</strong> Every Unicode byte is representable as a 1-byte token, so the tokenizer cannot OOV. Standard now in nearly every production tokenizer.</li>
+  </ul>
+
+  <p>Vocabulary sizes range from about 32k (Llama 2) to 128k-256k (Llama 3.x, Qwen, GPT-4o family). Larger vocabularies compress text more (fewer tokens per sentence), shrinking inference cost and stretching the effective context — but the embedding and unembedding matrices grow with vocabulary, increasing parameter count and memory.</p>
+
+  <p><strong>Multilingual token economics matter.</strong> A vocabulary trained predominantly on English will spend several tokens to encode a single character of Chinese, Bengali, Arabic, or Korean text — sometimes 2-4× the English token count for the same logical content. This shows up as inflated API bills, shorter effective context, and degraded quality. Modern models with explicitly multilingual tokenizers (Qwen, Gemma 3, GPT-4o) substantially close this gap.</p>
+
+  <h2>1.5 Special tokens and chat templates</h2>
+  <p>Beyond ordinary content tokens, every modern tokenizer reserves IDs for control: <code>BOS</code> (begin), <code>EOS</code> (end / stop), <code>PAD</code> for batching, plus role markers for chat. The model is trained to condition on these markers; how you arrange them at inference must match how they appeared in training.</p>
+
+  <p>A <strong>chat template</strong> is the deterministic function that turns a list of <code>{role, content}</code> messages into the token sequence the model expects. ChatML uses <code>&lt;|im_start|&gt;role\ncontent&lt;|im_end|&gt;</code>. The Llama 3 template uses <code>&lt;|begin_of_text|&gt;</code>, <code>&lt;|start_header_id|&gt;...&lt;|end_header_id|&gt;</code>, <code>&lt;|eot_id|&gt;</code>. Qwen, Mistral, and Gemma each have their own.</p>
+
+  <div class="callout pitfall">
+    <div class="callout-title">
+      <svg class="callout-icon" viewBox="0 0 24 24" fill="none" stroke="#B45309" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      Pitfall — wrong chat template, silent regression
+    </div>
+    <p>Using the wrong template (or hand-formatting strings instead of calling <code>tokenizer.apply_chat_template(messages, add_generation_prompt=True)</code>) often produces output that <em>looks</em> reasonable but is measurably worse on instruction-following and refuses to stop cleanly. The model never raises an error — it just regresses. Always derive the prompt from the tokenizer that ships with the checkpoint.</p>
+  </div>
+
+  <h2>1.6 Positional encodings</h2>
+  <p>Self-attention is permutation-equivariant; positional information must be injected explicitly.</p>
+
+  <ul>
+    <li><strong>Absolute (sinusoidal or learned).</strong> Add a position vector to each token embedding (original Transformer, GPT-2/3). Does not extrapolate beyond trained lengths.</li>
+    <li><strong>RoPE — Rotary Position Embedding.</strong> Rotates each Q and K vector by a position-dependent angle in 2D subspaces of the head. Encodes <em>relative</em> position implicitly via the inner product. Dominant in current open-weight LLMs.</li>
+    <li><strong>ALiBi.</strong> Adds a linear, head-specific bias to attention scores proportional to query-key distance. Pure extrapolation, zero training cost beyond the bias slope.</li>
+    <li><strong>YaRN, NTK-aware, dynamic NTK, ABF.</strong> Techniques for extending RoPE-trained models to longer contexts than their pretraining window by rescaling the rotary base frequency. Standard for taking a 4k-8k pretrained model to 32k-128k+ with a short continued-pretraining stage.</li>
+  </ul>
+<h2>1.7 From logits to loss</h2>
+<p>The final layer maps the last hidden state to vocabulary-size <em>logits</em>; softmax converts logits to a probability distribution; the training objective is the negative log-likelihood of the next token. For a sequence of length \(N\):</p>
+
+<div class="math-display">
+  $$ \mathcal{L}_{\text{CE}} = -\frac{1}{N} \sum_{t=1}^{N} \log p_\theta(x_t \mid x_{\lt t}) $$
+</div>
+
+<p><strong>Perplexity</strong> is the exponentiated per-token loss:</p>
+
+<div class="math-display">
+  $$ \operatorname{PPL} = \exp(\mathcal{L}_{\text{CE}}) $$
+</div>
+
+  <p>Perplexity has a direct probabilistic reading: the effective branching factor over the vocabulary. Lower is better, with 1.0 being perfect prediction. Perplexity is a useful comparator <em>only</em> across models sharing a tokenizer; cross-tokenizer comparisons are meaningless without a normalization step.</p>
+
+  <h2>1.8 Training objectives</h2>
+  <ul>
+    <li><strong>Causal LM.</strong> Predict each next token given prior tokens. The objective for decoder-only LLMs and the dominant pretraining task today.</li>
+    <li><strong>Masked LM.</strong> Mask roughly 15% of input tokens and predict them from bidirectional context (BERT). Yields strong representations, weak generators.</li>
+    <li><strong>Span corruption.</strong> Replace contiguous spans with sentinel tokens; predict the spans (T5). Encoder-decoder objective.</li>
+  </ul>
+
+  <h2>1.9 Sampling and decoding</h2>
+  <p>At inference the model emits a logit vector at each step; the decoder turns that into the next token.</p>
+
+  <ul>
+    <li><strong>Greedy.</strong> Argmax. Deterministic, prone to repetition loops, often dull on open-ended generation.</li>
+    <li><strong>Beam search.</strong> Maintain top-<em>k</em> partial hypotheses; useful for short structured outputs (translation, constrained generation), counter-productive for open-ended chat where it produces bland, mode-seeking text.</li>
+    <li><strong>Temperature.</strong> Scale logits by \(1/T\) before softmax. \(T<1\) sharpens, \(T>1\) flattens. \(T=0\) collapses to greedy.</li>
+    <li><strong>Top-<em>k</em>.</strong> Keep the <em>k</em> most-probable tokens, renormalize, sample.</li>
+    <li><strong>Top-<em>p</em> (nucleus).</strong> Keep the smallest set of tokens whose cumulative probability meets <em>p</em>. The <em>de facto</em> default.</li>
+    <li><strong>Min-<em>p</em>.</strong> Keep tokens with probability \(\geq p \cdot p_{\max}\). More stable than top-<em>p</em> across confidence regimes; handles the "the next token is obvious" case well.</li>
+    <li><strong>Typical sampling.</strong> Prefer tokens whose surprisal is near the conditional entropy. Less aggressive about clipping the long tail than top-<em>p</em>.</li>
+    <li><strong>Repetition / frequency / presence penalties.</strong> Subtract a fixed amount (or scale) from the logits of recently emitted tokens. Cheap fix for literal loops; aggressive values harm fluency.</li>
+    <li><strong>Contrastive decoding.</strong> Subtract a weak "amateur" model's log-probabilities from a strong "expert" model's, suppressing the easy-but-bland continuations both agree on.</li>
+  </ul>
+
+  <table>
+    <caption><strong>Table 1.1 ·</strong> Practical first-pass settings by symptom.</caption>
+    <thead>
+      <tr><th>Symptom or task</th><th>Decoding settings</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Code, math, factual extraction</td><td>\(T=0\) or \(0.1\), top-<em>p</em>=1, no repetition penalty</td></tr>
+      <tr><td>Chat / general assistant</td><td>\(T=0.7\), top-<em>p</em>=0.9, min-<em>p</em>=0.05</td></tr>
+      <tr><td>Creative writing</td><td>\(T=0.8\)-\(1.0\), top-<em>p</em>=0.92, min-<em>p</em>=0.02</td></tr>
+      <tr><td>Output keeps repeating phrases</td><td>repetition penalty 1.05-1.15, or switch to min-<em>p</em></td></tr>
+      <tr><td>JSON / schema-constrained output</td><td>structured-output / grammar enforcement (xgrammar, Outlines), <em>not</em> sampling tweaks</td></tr>
+    </tbody>
+  </table>
+
+  <h2>1.10 Scaling laws</h2>
+  <p>The early scaling-laws work (2020) established that test loss falls as a power law of model size, dataset size, and compute, with overlapping but separable exponents. The Chinchilla scaling-laws update (2022) re-derived the compute-optimal trade-off: for a fixed compute budget, parameter count and training tokens should grow together, with roughly <strong>20 tokens per parameter</strong> at the optimum. Earlier large models (GPT-3, OPT, MT-NLG) were sharply under-trained on data relative to their size; the Chinchilla model itself outperformed Gopher at four times fewer parameters.</p>
+
+  <p>Modern open-weight LLMs aim well past Chinchilla-optimal because <em>inference</em> cost scales with parameters and not with the tokens used to train them. A small model trained on far more tokens than its compute optimum is cheaper to serve forever than a larger model trained on fewer. Llama 3 8B was trained on roughly 15 trillion tokens — two orders of magnitude beyond Chinchilla optimum for its size — and the result is a small model that performs far above what its parameter count would predict.</p>
+
+  <h2>1.11 In-context learning and prompting primitives</h2>
+  <p>Treat these as part of the foundation, not as a separate "prompt engineering" discipline.</p>
+
+  <ul>
+    <li><strong>Zero-shot.</strong> Instruction only; relies on instruction tuning.</li>
+    <li><strong>Few-shot.</strong> Several in-context examples before the actual query. Effective when task format is unusual or label space is non-obvious.</li>
+    <li><strong>Chain-of-thought (CoT).</strong> Eliciting intermediate reasoning steps with example traces or "let's think step by step." Effects diminish or invert for reasoning-tuned models that already CoT internally — explicit "think step by step" can hurt.</li>
+    <li><strong>Role-message structure.</strong> Use the system / user / assistant channels as designed; bury task-invariant constraints in the system message, query in the user message.</li>
+    <li><strong>Templates.</strong> Treat prompts as parameterized objects with versioning and tests, not as ad-hoc strings.</li>
+  </ul>
+
+  <h2>1.12 Embeddings</h2>
+  <p>An <strong>embedding</strong> here means a fixed-dimensional vector summary of a piece of text, used for semantic search, clustering, classification heads, or retrieval-augmented generation.</p>
+
+  <ul>
+    <li><strong>Bi-encoder.</strong> Encode query and document independently; score by similarity. Allows offline indexing and approximate nearest-neighbor search at scale.</li>
+    <li><strong>Cross-encoder.</strong> Concatenate query and document and run them through the model jointly to produce a single relevance score. Far more accurate than a bi-encoder, but quadratic in the candidate set — used as a <em>reranker</em> over a small bi-encoder shortlist.</li>
+    <li><strong>Dimensionality.</strong> Production embeddings range from 256 to 4096 dimensions. <em>Matryoshka representation learning</em> trains the same vector to be useful when truncated to smaller prefixes — a single 1536-dim embedding can serve as a 256, 512, or 1024-dim embedding without re-encoding.</li>
+    <li><strong>Similarity measures.</strong> Cosine similarity (angle-only) is the default. Dot product (angle plus magnitude) is used when magnitude carries meaning. Euclidean distance is interchangeable with cosine after L2 normalization.</li>
+  </ul>
+
+  <h2>1.13 Context window vs effective context</h2>
+  <p>Advertised context windows have raced past 1M tokens, with some experimental models claiming 10M+. Usable context lags well behind. Three observations matter for engineering decisions.</p>
+
+  <ul>
+    <li><strong>Lost-in-the-middle.</strong> Models retrieve and reason from material at the start and end of a long context far better than from the middle. Important context belongs near the boundaries.</li>
+    <li><strong>Needle-in-a-haystack vs multi-needle.</strong> A model that scores 100% on single-needle retrieval may collapse on multi-needle, multi-hop, or reasoning-over-context tasks.</li>
+    <li><strong>Effective context is empirical.</strong> Treat advertised context as a soft upper bound; measure on representative tasks. A reasonable working assumption is 25-50% of the advertised window for accurate reasoning, lower for some models, higher for the strongest. Validate before architecting around long context.</li>
+  </ul>
+
+</section>
+
+<!-- ============================================================ -->
+<!-- PART 2 — MODERN MODEL LANDSCAPE                               -->
+<!-- ============================================================ -->
+<section class="part" id="part-2">
+  <span class="part-running">Part 2 · Modern model landscape</span>
+  <div class="part-banner">
+    <p class="part-eyebrow">Part 2</p>
+    <h1>Modern model landscape (2025-2026)</h1>
+    <p class="part-deck"><em>The current model zoo, sorted by what is actually shipping in production rather than by leaderboard position.</em></p>
+  </div>
+
+  <p>The model space partitions cleanly into open-weight families you can self-host, frontier closed APIs, reasoning-specialized models that consume far more compute per query, alternative architectures challenging dense Transformers, and small models tuned for the edge.</p>
+
+  <h2>2.1 Open-weight families</h2>
+  <ul>
+    <li><strong>Llama 3.x and 4 (Meta).</strong> The 3.x line spans roughly 1B, 3B, 8B, 70B, and 405B dense parameters; Llama 4 introduced Mixture-of-Experts variants and natively multimodal designs. Wide tooling support, permissive license with named-user thresholds.</li>
+    <li><strong>Qwen 2.5 / 3 (Alibaba).</strong> Sizes from sub-1B through tens of billions, plus large MoE configurations. Strong multilingual coverage — particularly Chinese — and competitive with Llama on most English benchmarks.</li>
+    <li><strong>Mistral and Mixtral.</strong> Mistral 7B remains a workhorse small model; Mixtral 8×7B and 8×22B were the breakout open MoE designs. Newer flagship Mistral models have moved to closed weights.</li>
+    <li><strong>Gemma 3 (Google).</strong> Open-weight sibling line to Gemini, multimodal at the larger sizes, multilingual focus.</li>
+    <li><strong>Phi-4 (Microsoft).</strong> The "small but punchy" line, trained heavily on synthetic and curated data; consistently outperforms its parameter count on reasoning benchmarks.</li>
+    <li><strong>DeepSeek-V3.</strong> Large MoE with MLA attention and DeepSeekMoE routing; reaches frontier quality at a fraction of dense-model serving cost.</li>
+    <li><strong>DeepSeek-R1.</strong> Reasoning model derived from V3 via RL on verifiable rewards; the open-weight reference for inference-time-compute reasoning.</li>
+    <li><strong>Command-R / R+ (Cohere).</strong> Optimized for enterprise retrieval-augmented generation and tool use; structured-output and citation behavior baked in.</li>
+  </ul>
+
+  <h2>2.2 Frontier closed models</h2>
+  <ul>
+    <li><strong>GPT-5 family (OpenAI).</strong> The successor line to the GPT-4 generation. Reasoning is on by default at the upper tiers; multimodal across text, image, and audio.</li>
+    <li><strong>Claude 4.x family — Opus, Sonnet, Haiku (Anthropic).</strong> Tiered by capability and cost. Strong on coding, long-form analysis, and instruction adherence. Constitutional AI-derived alignment.</li>
+    <li><strong>Gemini 2.5 (Google).</strong> Native multimodal across text, image, audio, and video, with very long context windows and tight integration into Google's tooling ecosystem.</li>
+  </ul>
+
+  <h2>2.3 Reasoning models and test-time compute</h2>
+  <p>A new model class — exemplified by OpenAI's <strong>o1</strong> and <strong>o3</strong>, DeepSeek's <strong>R1</strong>, and Qwen's <strong>QwQ</strong> — produces an extended internal chain of thought before committing to a visible response. Quality scales with the number of "thinking tokens" the model is allowed to spend; cost scales the same way.</p>
+
+  <p>Test-time compute is justified for problems that meaningfully benefit from search and verification — competition math, multi-step proofs, code with non-trivial constraints, agentic planning under uncertainty. It is <em>not</em> justified for extraction, classification, simple Q&amp;A, or anything latency-sensitive: the cost premium is large and the quality lift is small or zero.</p>
+
+  <figure>
+    <div class="mermaid">
+flowchart TB
+    subgraph OW["Open-weight (self-host)"]
+      direction TB
+      L["Llama 3.x / 4"]
+      Q["Qwen 2.5 / 3"]
+      M["Mistral / Mixtral"]
+      G["Gemma 3"]
+    end
+
+    subgraph FC["Frontier closed (API)"]
+      direction TB
+      GPT["GPT-5 family"]
+      CL["Claude 4.x"]
+      GE["Gemini 2.5"]
+    end
+
+    subgraph RM["Reasoning / test-time compute"]
+      direction TB
+      O1["o1 / o3"]
+      R1["DeepSeek-R1"]
+      QW["QwQ"]
+    end
+
+    subgraph SLM["Small / on-device"]
+      direction TB
+      P["Phi-4 / Phi-mini"]
+      GN["Gemma-nano"]
+      L32["Llama 3.2 1B / 3B"]
+    end
+
+    classDef ow fill:#F4F6FA,stroke:#0F2A4A,color:#0F2A4A
+    classDef fc fill:#E8F0FB,stroke:#1F6FEB,color:#0F2A4A
+    classDef rm fill:#F0F8F2,stroke:#1F8B4C,color:#0F2A4A
+    classDef sl fill:#FBF3E8,stroke:#B45309,color:#0F2A4A
+    class L,Q,M,G ow
+    class GPT,CL,GE fc
+    class O1,R1,QW rm
+    class P,GN,L32 sl
+    </div>
+    <figcaption><strong>Figure 2.1 ·</strong> A non-exhaustive map of the 2025-2026 LLM landscape. Reasoning models exist as variants of, or successors to, models in the open-weight and frontier-closed groups; small models inherit recipes from their larger siblings.</figcaption>
+  </figure>
+
+  <h2>2.4 Architectures beyond dense Transformers</h2>
+  <ul>
+    <li><strong>Dense Transformers.</strong> All weights activate for every token. Predictable throughput, predictable cost, the easiest to serve.</li>
+    <li><strong>Mixture-of-Experts (MoE).</strong> Many feed-forward "experts" per layer; a router selects a small top-<em>k</em> (typically 2-8 of 16-256) per token. Inference cost is governed by <em>active</em> parameters, not total — DeepSeek-V3 has ~671B total parameters but ~37B active. Training is harder (load-balancing losses, expert collapse), serving is harder (memory still scales with total parameters; routing imbalance kills throughput).</li>
+    <li><strong>State-Space Models (Mamba, Mamba-2).</strong> Selective state-space layers process sequences in linear time with fixed-size hidden state — no attention, no quadratic cost in sequence length. Compelling for very long inputs; on shorter inputs they trail strong attention models on recall and in-context learning.</li>
+    <li><strong>Hybrid stacks.</strong> Alternate SSM and attention layers to retain attention's ICL strengths while gaining SSM's long-context economics. Jamba, Zamba, and several recent open-weight releases use this pattern; the Pareto frontier favors hybrids over pure SSM.</li>
+    <li><strong>Diffusion language models.</strong> Generate sequences by iterative denoising rather than left-to-right autoregression. They trade latency against throughput differently — parallelizable across positions, but require multiple denoising steps per output. Still early; not yet mainstream for general-purpose chat.</li>
+  </ul>
+
+  <h2>2.5 Small Language Models and on-device deployment</h2>
+  <p>SLMs target latency, privacy, offline use, and cost rather than chasing the leaderboard. The Phi family demonstrated that aggressive synthetic-data curation lets a billion-parameter model match older 7B-class models on reasoning. Gemma-nano targets sub-1B on-device serving; Llama 3.2 1B and 3B are designed for edge deployment.</p>
+
+  <p>SLMs work well for narrow, well-specified tasks — extraction, classification, structured rewriting, function-call decision — and for environments where round-tripping to a cloud API is unacceptable. They struggle on open-ended reasoning and on knowledge-intensive prompts where parameter capacity is the binding constraint.</p>
+
+  <div class="callout">
+    <div class="callout-title">
+      <svg class="callout-icon" viewBox="0 0 24 24" fill="none" stroke="#1F6FEB" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4"/><path d="M12 18v4"/><path d="M4.93 4.93l2.83 2.83"/><path d="M16.24 16.24l2.83 2.83"/><path d="M2 12h4"/><path d="M18 12h4"/><path d="M4.93 19.07l2.83-2.83"/><path d="M16.24 7.76l2.83-2.83"/></svg>
+      Key idea — pick by binding constraint, not by leaderboard
+    </div>
+    <p>The right model for a system is the smallest one that meets the quality bar on representative evals at acceptable latency and cost. Frontier closed for hard reasoning when the capability is the constraint; mid-size open-weight for a tunable, self-hostable workhorse; SLM for edge or strict cost ceilings; reasoning model only when the task actually rewards extra thinking tokens.</p>
+  </div>
+
+</section>
+
+<!-- ============================================================ -->
+<!-- PART 3 — ADAPTING MODELS                                      -->
+<!-- ============================================================ -->
+<section class="part" id="part-3">
+  <span class="part-running">Part 3 · Adapting models</span>
+  <div class="part-banner">
+    <p class="part-eyebrow">Part 3</p>
+    <h1>Adapting models — SFT, PEFT, alignment, distributed training</h1>
+    <p class="part-deck"><em>From a base checkpoint to a deployable instruction-tuned model: every knob, every trade-off, and the failure modes that bite you in week three.</em></p>
+  </div>
+
+  <h2>3.1 Choosing the right adaptation stage</h2>
+  <p>Three adaptation regimes, ordered by intensity:</p>
+
+  <ul>
+    <li><strong>Continued pre-training (DAPT — domain-adaptive pre-training).</strong> Run the next-token-prediction objective on a large unlabeled domain corpus to shift the model's intrinsic distribution. Use this when you have a serious distributional gap from the pretraining data — legal text, biomedical text, low-resource languages, a specialized programming language — and a corpus measured in billions of tokens. Expensive; risks catastrophic forgetting of general ability.</li>
+    <li><strong>Supervised fine-tuning (SFT — also called instruction tuning).</strong> Train on demonstration pairs <em>(prompt, completion)</em> with the standard LM loss, usually masked to the completion only. The cheapest large-effect lever: a few thousand to a few hundred thousand high-quality examples reshape style, format, and task behavior.</li>
+    <li><strong>Preference optimization.</strong> Train on pairs (or rankings) of <em>better</em> and <em>worse</em> completions for the same prompt to refine tone, helpfulness, safety, and adherence to subtle constraints SFT cannot teach from demonstrations alone.</li>
+  </ul>
+
+  <p>The canonical pipeline is <strong>pretrain → SFT → preference optimization</strong>, optionally followed by a safety-focused pass (RLAIF or constitutional revision). Skip the first stage if your task does not need a knowledge shift. Skip the third if SFT alone meets the bar — most narrow tasks do not need preference tuning.</p>
+
+  <h2>3.2 Loss masking in SFT</h2>
+  <p>The single most common SFT bug: training the cross-entropy loss on the prompt tokens as well as the response. The fix is to construct a <code>labels</code> tensor in which all prompt-position labels are set to PyTorch's ignore index (<code>-100</code>), so gradient flows only through the response tokens. Forgetting this wastes capacity on memorizing the prompt distribution and degrades response quality measurably.</p>
+
+  <p>Hugging Face's <code>SFTTrainer</code> exposes a chat-template-aware <code>assistant_only_loss</code> path (and the <code>DataCollatorForCompletionOnlyLM</code> equivalent) that does the masking for you when you supply the conversation in the standard <code>{role, content}</code> format. Hand-rolled tokenization paths must implement the masking explicitly.</p>
+
+  <h2>3.3 Parameter-Efficient Fine-Tuning (PEFT)</h2>
+  <p>Full fine-tuning a 70B-parameter model requires the optimizer states, gradients, and master weights for every parameter — at bf16 mixed precision with Adam, that is roughly 16 bytes per parameter, or about 1.1 TB of GPU memory before activations. PEFT methods freeze the base weights and train a tiny number of new parameters, slashing memory and storage.</p>
+
+  <ul>
+    <li><strong>LoRA.</strong> For a frozen weight \(W \in \mathbb{R}^{m \times n}\), introduce a low-rank update \(\Delta W = BA\) with \(B \in \mathbb{R}^{m \times r}\), \(A \in \mathbb{R}^{r \times n}\), \(r \ll \min(m,n)\). Only \(A\) and \(B\) train. Typical ranks are 8-64. Trainable parameters: roughly 0.1-1% of the base model.</li>
+    <li><strong>QLoRA.</strong> LoRA applied on top of a 4-bit NF4-quantized base, with double-quantization of the quantization constants and paged optimizer states. Fits a 70B fine-tune into a single 48-80 GB GPU. The dominant approach for hobbyist and small-team fine-tuning.</li>
+    <li><strong>DoRA — Weight-Decomposed Low-Rank Adaptation.</strong> Decomposes the pretrained weight into a magnitude vector and a direction matrix; trains the direction with a LoRA-style low-rank update and the magnitude separately. Closes much of the quality gap to full FT at the same trainable-parameter count.</li>
+    <li><strong>AdaLoRA.</strong> Allocates the rank budget across layers adaptively using SVD-based importance scoring during training. More parameter-efficient than fixed-rank LoRA.</li>
+    <li><strong>LoftQ.</strong> A LoRA initialization scheme for quantized bases — finds the low-rank residual that minimizes the quantization error of the frozen base, giving the LoRA adapter a meaningful starting point rather than zero.</li>
+    <li><strong>IA³ — Infused Adapter by Inhibiting and Amplifying Inner Activations.</strong> Learns three vectors that scale the keys, values, and FFN intermediate activations. Even fewer parameters than LoRA, lower quality ceiling — useful for many-task multi-tenancy where adapter size dominates storage.</li>
+    <li><strong>Prompt tuning / prefix tuning.</strong> Train soft tokens prepended to the input embedding (prompt tuning) or to every layer's keys and values (prefix tuning). Underperforms LoRA for serious adaptation; rarely used today except in very small models.</li>
+  </ul>
+
+  <figure>
+    <svg viewBox="0 0 720 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="PEFT method comparison">
+      <style>
+        .peft-h    { font: 600 13px Inter, "Segoe UI", sans-serif; fill: #FFFFFF; }
+        .peft-c    { font: 12px Inter, "Segoe UI", sans-serif; fill: #1A1A1A; }
+        .peft-cb   { font: 600 12px Inter, "Segoe UI", sans-serif; fill: #0F2A4A; }
+        .peft-h-bg { fill: #0F2A4A; }
+        .peft-row-a { fill: #FFFFFF; }
+        .peft-row-b { fill: #FAFBFD; }
+        .peft-line { stroke: #E5E9EF; stroke-width: 1; }
+        .bar-bg    { fill: #E5E9EF; }
+        .bar-q     { fill: #1F6FEB; }
+        .bar-q2    { fill: #1F8B4C; }
+        .bar-q3    { fill: #B45309; }
+      </style>
+
+      <!-- header -->
+      <rect class="peft-h-bg" x="0" y="0" width="720" height="36"/>
+      <text class="peft-h" x="14"  y="23">Method</text>
+      <text class="peft-h" x="170" y="23">Trainable params</text>
+      <text class="peft-h" x="320" y="23">Quality vs full FT</text>
+      <text class="peft-h" x="510" y="23">Notes</text>
+
+      <!-- rows -->
+      <g>
+        <rect class="peft-row-a" x="0" y="36"  width="720" height="60"/>
+        <rect class="peft-row-b" x="0" y="96"  width="720" height="60"/>
+        <rect class="peft-row-a" x="0" y="156" width="720" height="60"/>
+        <rect class="peft-row-b" x="0" y="216" width="720" height="60"/>
+        <rect class="peft-row-a" x="0" y="276" width="720" height="60"/>
+      </g>
+
+      <!-- separators -->
+      <g>
+        <line class="peft-line" x1="0" y1="96"  x2="720" y2="96"/>
+        <line class="peft-line" x1="0" y1="156" x2="720" y2="156"/>
+        <line class="peft-line" x1="0" y1="216" x2="720" y2="216"/>
+        <line class="peft-line" x1="0" y1="276" x2="720" y2="276"/>
+        <line class="peft-line" x1="0" y1="336" x2="720" y2="336"/>
+      </g>
+
+      <!-- LoRA -->
+      <text class="peft-cb" x="14" y="72">LoRA</text>
+      <text class="peft-c"  x="14" y="89">low-rank A·B adapters</text>
+      <text class="peft-c"  x="170" y="72">~0.1-1%</text>
+      <rect class="bar-bg"  x="170" y="78" width="120" height="8" rx="3"/>
+      <rect class="bar-q"   x="170" y="78" width="14"  height="8" rx="3"/>
+      <text class="peft-c"  x="320" y="72">strong (most tasks)</text>
+      <rect class="bar-bg"  x="320" y="78" width="160" height="8" rx="3"/>
+      <rect class="bar-q2"  x="320" y="78" width="135" height="8" rx="3"/>
+      <text class="peft-c"  x="510" y="72">default starting point;</text>
+      <text class="peft-c"  x="510" y="89">merge into base for zero-cost serving</text>
+
+      <!-- QLoRA -->
+      <text class="peft-cb" x="14" y="132">QLoRA</text>
+      <text class="peft-c"  x="14" y="149">4-bit NF4 base + LoRA</text>
+      <text class="peft-c"  x="170" y="132">~0.1-1%</text>
+      <rect class="bar-bg"  x="170" y="138" width="120" height="8" rx="3"/>
+      <rect class="bar-q"   x="170" y="138" width="14"  height="8" rx="3"/>
+      <text class="peft-c"  x="320" y="132">slight gap to LoRA</text>
+      <rect class="bar-bg"  x="320" y="138" width="160" height="8" rx="3"/>
+      <rect class="bar-q2"  x="320" y="138" width="125" height="8" rx="3"/>
+      <text class="peft-c"  x="510" y="132">70B fine-tune on a single 48-80 GB GPU;</text>
+      <text class="peft-c"  x="510" y="149">paged optimizer absorbs spikes</text>
+
+      <!-- DoRA -->
+      <text class="peft-cb" x="14" y="192">DoRA</text>
+      <text class="peft-c"  x="14" y="209">magnitude + direction split</text>
+      <text class="peft-c"  x="170" y="192">~0.1-1%</text>
+      <rect class="bar-bg"  x="170" y="198" width="120" height="8" rx="3"/>
+      <rect class="bar-q"   x="170" y="198" width="14"  height="8" rx="3"/>
+      <text class="peft-c"  x="320" y="192">closer to full FT than LoRA</text>
+      <rect class="bar-bg"  x="320" y="198" width="160" height="8" rx="3"/>
+      <rect class="bar-q2"  x="320" y="198" width="148" height="8" rx="3"/>
+      <text class="peft-c"  x="510" y="192">small extra train cost vs LoRA;</text>
+      <text class="peft-c"  x="510" y="209">drop-in replacement in TRL/PEFT</text>
+
+      <!-- AdaLoRA -->
+      <text class="peft-cb" x="14" y="252">AdaLoRA</text>
+      <text class="peft-c"  x="14" y="269">adaptive rank allocation</text>
+      <text class="peft-c"  x="170" y="252">dynamic, similar total</text>
+      <rect class="bar-bg"  x="170" y="258" width="120" height="8" rx="3"/>
+      <rect class="bar-q"   x="170" y="258" width="22" height="8" rx="3"/>
+      <text class="peft-c"  x="320" y="252">strong at lower budgets</text>
+      <rect class="bar-bg"  x="320" y="258" width="160" height="8" rx="3"/>
+      <rect class="bar-q2"  x="320" y="258" width="130" height="8" rx="3"/>
+      <text class="peft-c"  x="510" y="252">SVD-style pruning during training;</text>
+      <text class="peft-c"  x="510" y="269">more hyperparameters to babysit</text>
+
+      <!-- IA3 -->
+      <text class="peft-cb" x="14" y="312">IA³</text>
+      <text class="peft-c"  x="14" y="329">activation rescaling</text>
+      <text class="peft-c"  x="170" y="312">≪ 0.1%</text>
+      <rect class="bar-bg"  x="170" y="318" width="120" height="8" rx="3"/>
+      <rect class="bar-q"   x="170" y="318" width="4"  height="8" rx="3"/>
+      <text class="peft-c"  x="320" y="312">lower ceiling than LoRA</text>
+      <rect class="bar-bg"  x="320" y="318" width="160" height="8" rx="3"/>
+      <rect class="bar-q3"  x="320" y="318" width="85" height="8" rx="3"/>
+      <text class="peft-c"  x="510" y="312">adapter is tiny — fits multi-tenant</text>
+      <text class="peft-c"  x="510" y="329">serving where storage dominates</text>
+    </svg>
+    <figcaption><strong>Figure 3.1 ·</strong> PEFT methods compared on trainable-parameter footprint, quality relative to full fine-tuning, and practical notes. Bar widths are illustrative — measure on your task before committing to a method.</figcaption>
+  </figure>
+
+  <h2>3.4 Alignment: turning a base model into a useful one</h2>
+  <p>SFT teaches format and task; preference optimization teaches taste — which of two acceptable answers is preferred, and by how much. The history runs from RLHF through a sequence of progressively simpler losses.</p>
+
+  <ul>
+    <li><strong>RLHF with PPO.</strong> Train a reward model on human preference pairs, then optimize the policy with Proximal Policy Optimization, with a KL-divergence penalty against the SFT reference policy to prevent drift. Powerful, infamously brittle: reward hacking, reward-model overfitting, and PPO instability all conspire against you.</li>
+    <li><strong>DPO — Direct Preference Optimization.</strong> Algebraically rearranges the RLHF objective to remove the explicit reward model: under the Bradley-Terry preference model and with the same KL anchor, the optimal policy is a closed-form function of the preferences and the reference, so you can fit it directly. Loss:</li>
+  </ul>
+
+  <div class="math-display">
+    $$ \mathcal{L}_{\text{DPO}}(\pi_\theta;\,\pi_{\text{ref}}) \;=\; -\,\mathbb{E}_{(x, y_w, y_l)\sim\mathcal{D}}\!\left[\, \log \sigma\!\left(\beta \log\frac{\pi_\theta(y_w \mid x)}{\pi_{\text{ref}}(y_w \mid x)} \;-\; \beta \log\frac{\pi_\theta(y_l \mid x)}{\pi_{\text{ref}}(y_l \mid x)}\right) \right] $$
+  </div>
+
+  <p>Here \((x, y_w, y_l)\) is a prompt with a winning and losing completion, \(\pi_{\text{ref}}\) is the SFT model, and \(\beta\) controls how strongly the policy can deviate from the reference. DPO is the current default starting point — simpler than PPO, two-thirds the moving parts.</p>
+
+  <ul>
+    <li><strong>IPO — Identity Preference Optimization.</strong> Replaces DPO's logistic loss with a squared loss on the implicit reward gap, mitigating DPO's tendency to over-fit on near-deterministic preferences and run the implicit reward to ±∞.</li>
+    <li><strong>KTO — Kahneman-Tversky Optimization.</strong> Operates on <em>unpaired</em> thumbs-up / thumbs-down signals rather than pair preferences, modeling utility with a prospect-theory-flavored asymmetry. Useful when your data pipeline naturally yields unary feedback rather than head-to-head comparisons.</li>
+    <li><strong>ORPO — Odds Ratio Preference Optimization.</strong> Combines the SFT loss and a preference signal in a single training stage, eliminating the reference model entirely. Memory-cheap, simple, surprisingly competitive — good fit for small-team setups.</li>
+    <li><strong>SimPO.</strong> Length-normalized preference loss without a reference model. Cheap and stable; closes much of the gap to DPO without the KL anchor.</li>
+    <li><strong>RLAIF — RL from AI Feedback.</strong> A larger model labels preferences in place of human raters. Quality of the resulting policy tracks the labeler's judgment closely; pairs well with curated rubrics.</li>
+    <li><strong>Constitutional AI.</strong> The model critiques and revises its own outputs against a written constitution, generating preference pairs (original vs revised) that drive the alignment stage. Removes much of the human labeling cost from safety alignment specifically.</li>
+  </ul>
+
+  <h2>3.5 Synthetic data pipelines</h2>
+  <p>The marginal value of an extra <em>good</em> training example is large; the marginal value of an extra <em>bad</em> one is negative. Modern post-training leans heavily on synthetic data generation precisely because curation, not collection, is the binding constraint.</p>
+
+  <ul>
+    <li><strong>Distillation.</strong> A strong teacher model generates traces — answers, chains of thought, tool-use trajectories — that a smaller student is trained to imitate. The dominant pattern for producing capable small models.</li>
+    <li><strong>Self-instruct.</strong> Bootstrap an instruction dataset by prompting the model to generate new instruction-response pairs from a small seed set, then filter for quality.</li>
+    <li><strong>Evol-instruct.</strong> Iteratively complicate prompts in a controlled way — deepen, broaden, add constraints, increase reasoning steps — to produce harder training examples than the seed pool contains.</li>
+    <li><strong>Self-rewarding.</strong> The model alternates between acting as policy and as judge; preferred outputs (by the model's own judgment) feed the next preference-tuning round. Scales preference data generation but propagates the model's biases into its own training signal.</li>
+  </ul>
+
+  <h2>3.6 Distributed-training primer</h2>
+  <p>Once a model no longer fits on a single GPU, or once you want to shrink wall-clock time, you reach for parallelism. Each scheme shards a different dimension; production training stacks combine several.</p>
+
+  <ul>
+    <li><strong>DDP — Distributed Data Parallel.</strong> Replicate the full model on every GPU; each GPU processes a different micro-batch; gradients synchronize via all-reduce. Limit: the entire model, optimizer states, and activations must fit on one device.</li>
+    <li><strong>ZeRO-1.</strong> Partition optimizer states across data-parallel ranks. Cuts the largest memory consumer (Adam's two moment buffers) by the world size.</li>
+    <li><strong>ZeRO-2.</strong> Add gradient partitioning. Gradients are reduced-scattered rather than all-reduced.</li>
+    <li><strong>ZeRO-3 / FSDP — Fully Sharded Data Parallel.</strong> Add parameter partitioning. Each rank holds only its shard of weights; full layers are gathered just-in-time for the forward and backward pass, then released. The standard way to train large models when you have many GPUs but cannot afford tensor-parallel network bandwidth.</li>
+    <li><strong>Tensor Parallel (TP).</strong> Split individual matrix multiplications across devices (Megatron-LM style — column-parallel for QKV projections, row-parallel for output projections). Communication-heavy; almost always run within a single node over NVLink.</li>
+    <li><strong>Pipeline Parallel (PP).</strong> Split layers into stages on different devices; pipeline micro-batches through them. Introduces a "bubble" — idle time at the start and end of the pipeline — that is partially hidden by the 1F1B or interleaved schedules.</li>
+    <li><strong>Sequence Parallel (SP).</strong> Shard the sequence dimension of activations. Pairs naturally with TP to cut per-device activation memory at long contexts.</li>
+  </ul>
+
+  <p>In practice, large-scale training combines these: <strong>FSDP for parameters</strong>, <strong>TP within a node</strong> for the largest layers, <strong>PP across nodes</strong> when the model exceeds a single node's memory, and <strong>SP</strong> when context length is the bottleneck. The right configuration depends on model size, batch size, sequence length, and the network topology you actually have.</p>
+
+  <p>Auxiliary techniques that are nearly always on:</p>
+  <ul>
+    <li><strong>Mixed precision: bf16</strong> is the default for training. It has the same exponent range as fp32 — no loss-scaling required, no overflow surprises. fp16 is cheaper on older hardware but needs careful loss scaling and is brittle at scale.</li>
+    <li><strong>Gradient accumulation.</strong> Accumulate gradients over <em>k</em> micro-batches before stepping; simulates a global batch size <em>k</em>× the per-step batch.</li>
+    <li><strong>Gradient checkpointing</strong> (a.k.a. activation checkpointing). Recompute selected activations during the backward pass instead of storing them. Costs roughly 30% extra compute, saves on the order of 50%+ activation memory; required for long-context training.</li>
+    <li><strong>Activation offloading.</strong> Stash activations in CPU memory or NVMe between the forward and backward pass. Saves GPU memory at the cost of PCIe bandwidth — used selectively, on the largest activations.</li>
+  </ul>
+
+  <h2>3.7 Model merging</h2>
+  <p>Once you have several fine-tuned variants of the same base, you can sometimes get a better model than any individual one by combining their weights — without further training.</p>
+
+  <ul>
+    <li><strong>Task-vector arithmetic.</strong> Define each fine-tune's <em>task vector</em> as \(\tau_i = \theta_i^{\text{ft}} - \theta^{\text{base}}\). Combine by adding scaled task vectors back to the base: \(\theta' = \theta^{\text{base}} + \sum_i \alpha_i \tau_i\). Subtraction can <em>remove</em> a behavior.</li>
+    <li><strong>TIES — TrIm, Elect Sign, Disjoint Merge.</strong> Sparsifies each task vector, resolves sign conflicts across vectors by majority vote, and averages only the agreeing entries. Reduces interference when merging adapters that pull in different directions.</li>
+    <li><strong>DARE — Drop And REscale.</strong> Randomly drops a fraction of each delta and rescales the survivors to compensate. Often a near-loss-free compression, sometimes a quality boost.</li>
+    <li><strong>SLERP — Spherical Linear intERPolation.</strong> Interpolates two checkpoints along the great circle on a hyper-sphere rather than the chord. Often outperforms naive linear averaging on two-model merges.</li>
+    <li><strong>MergeKit.</strong> The standard tooling. Recipe-driven YAML; supports all of the above plus Frankenmerges (interleaving layers from multiple models).</li>
+  </ul>
+
+  <h2>3.8 Practical fine-tuning tooling</h2>
+  <p>The community has converged on a small stack. Pick by team size and operational maturity, not by feature checklist.</p>
+
+  <ul>
+    <li><strong>Hugging Face <code>peft</code> + <code>accelerate</code>.</strong> The foundational layers — adapter implementations, multi-GPU launchers, FSDP / DeepSpeed integration. Almost everything else sits on top.</li>
+    <li><strong>TRL.</strong> <code>SFTTrainer</code>, <code>DPOTrainer</code>, <code>KTOTrainer</code>, <code>ORPOTrainer</code>, <code>GRPOTrainer</code>. The default Python API for post-training.</li>
+    <li><strong>Axolotl.</strong> YAML-driven training stack with first-class LoRA / QLoRA / FSDP / DeepSpeed support. The de facto choice for community fine-tunes.</li>
+    <li><strong>Unsloth.</strong> Custom Triton kernels and memory tricks; roughly 2× the throughput of vanilla TRL for LoRA / QLoRA SFT and DPO on supported architectures.</li>
+    <li><strong>LLaMA-Factory.</strong> Web UI plus CLI; broad coverage of methods. Useful for teams that want to expose fine-tuning to non-engineers.</li>
+  </ul>
+
+  <h2>3.9 A minimal SFT recipe</h2>
+  <p>The snippet below is a complete LoRA SFT setup using <code>peft</code> and <code>trl</code> — the smallest configuration that is actually useful in practice.</p>
+
+  <pre data-lang="Python"><code class="language-python">from datasets import load_dataset
+from peft import LoraConfig
+from transformers import AutoModelForCausalLM, AutoTokenizer
+from trl import SFTConfig, SFTTrainer
+
+model_id = "meta-llama/Meta-Llama-3-8B"
+tokenizer = AutoTokenizer.from_pretrained(model_id)
+model = AutoModelForCausalLM.from_pretrained(model_id, torch_dtype="bfloat16")
+
+lora = LoraConfig(r=16, lora_alpha=32, lora_dropout=0.05, bias="none",
+    target_modules=["q_proj", "k_proj", "v_proj", "o_proj"], task_type="CAUSAL_LM")
+
+dataset = load_dataset("HuggingFaceH4/ultrachat_200k", split="train_sft")
+args = SFTConfig(output_dir="./sft-llama3-lora", learning_rate=2e-4, bf16=True,
+    per_device_train_batch_size=4, gradient_accumulation_steps=4,
+    max_seq_length=2048, packing=True, assistant_only_loss=True)
+
+trainer = SFTTrainer(model, args=args, train_dataset=dataset,
+                     peft_config=lora, processing_class=tokenizer)
+trainer.train()
+</code></pre>
+
+  <h2>3.10 The alignment pipeline end-to-end</h2>
+  <p>The pieces connect into a recognizable assembly line. Pretraining produces a base model; SFT shapes it into an instruction-follower; preference optimization tunes its taste; an optional safety pass enforces hard constraints.</p>
+
+  <figure>
+    <div class="mermaid">
+flowchart TB
+    A["Pretraining<br/>(causal LM, trillions of tokens)"]
+      -->|"base checkpoint"| B["SFT<br/>(demonstrations, completion-only loss)"]
+    B -->|"instruction-tuned model"| C["Preference optimization<br/>(DPO / IPO / KTO / ORPO / SimPO)"]
+    C -->|"aligned policy"| D["Optional: safety / RLAIF<br/>(constitutional revision, red-team data)"]
+    D --> E["Deployable model"]
+
+    classDef stage fill:#F4F6FA,stroke:#0F2A4A,color:#0F2A4A
+    classDef out fill:#E8F0FB,stroke:#1F6FEB,color:#0F2A4A
+    class A,B,C,D stage
+    class E out
+    </div>
+    <figcaption><strong>Figure 3.2 ·</strong> The canonical post-training pipeline. Each stage is optional in principle and routinely skipped in practice — DAPT before SFT for domain shift, SFT-only for narrow tasks, ORPO collapsing SFT and preference into a single stage, or a safety pass after preference tuning.</figcaption>
+  </figure>
+
+  <h2>3.11 Failure modes</h2>
+  <ul>
+    <li><strong>Catastrophic forgetting.</strong> Post-training degrades unrelated abilities — the freshly SFT-tuned model can no longer write Python, or has lost a language. Mitigations: a replay buffer of pretraining data mixed into post-training, lower learning rates, LoRA (which constrains drift to the adapter), or explicit regularization toward the reference model (which DPO and PPO do automatically via their KL term).</li>
+    <li><strong>Reward hacking.</strong> The policy discovers an exploit of the reward model that scores high but fails the underlying intent — verbose answers that pattern-match "helpfulness," confident wrong answers that the reward model cannot distinguish, sycophancy. Mitigations: KL anchoring, ensembles of reward models with disagreement penalties, frequent reward-model retraining on adversarial samples, and out-of-distribution monitoring.</li>
+    <li><strong>Alignment tax.</strong> Aligned models score lower on raw capability benchmarks than their base counterparts. Some of this is inherent (safety constraints exclude valid completions); some is mitigable by mixing capability data into the preference stage so the gradient is not purely shaped by stylistic preferences.</li>
+    <li><strong>Mode collapse.</strong> Outputs lose diversity — the model produces near-identical responses to varied prompts. Particularly common with aggressive DPO. Mitigations: lower \(\beta\), length normalization (SimPO), mixing the SFT loss into the preference stage (ORPO-style), or capping training to fewer epochs.</li>
+  </ul>
+
+  <div class="callout tip">
+    <div class="callout-title">
+      <svg class="callout-icon" viewBox="0 0 24 24" fill="none" stroke="#1F8B4C" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      Senior tip — eval-driven adaptation
+    </div>
+    <p>Instrument the eval suite before you touch any training code. Run it on the base model to set the floor; run it after every fine-tuning experiment; track both target metrics and capability regressions on a held-out set of pretraining-style tasks. The gradient of the loss does not measure what you actually care about; only the eval suite does. The fastest fine-tuning teams iterate on the dataset, not on the optimizer.</p>
+  </div>
+
+</section>
+
+<!-- ============================================================ -->
+<!-- SCRIPTS                                                       -->
+<!-- ============================================================ -->
+<script>
+  // Mermaid initialization (must precede mermaid.run, which startOnLoad triggers)
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'base',
+    flowchart: { useMaxWidth: true, htmlLabels: true, curve: 'basis' },
+    themeVariables: {
+      fontFamily: 'Inter, "Segoe UI", system-ui, sans-serif',
+      fontSize: '15px',
+      primaryColor: '#F4F6FA',
+      primaryBorderColor: '#0F2A4A',
+      primaryTextColor: '#0F2A4A',
+      lineColor: '#4A5568',
+      secondaryColor: '#FFFFFF',
+      tertiaryColor: '#E5E9EF'
+    }
+  });
+</script>
+
+<script>
+  // MathJax render-completion guard — ensures TeX is typeset before printing.
+  window.addEventListener('load', function () {
+    if (window.MathJax && MathJax.typesetPromise) {
+      MathJax.typesetPromise().catch(function (err) {
+        console.error('MathJax typesetting failed:', err);
+      });
+    }
+  });
+</script>
+
+</body>
+</html>

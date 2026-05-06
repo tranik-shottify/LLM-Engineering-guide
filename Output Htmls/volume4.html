@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LLM Engineering — A Practitioner's Reference · Volume 4</title>
+
+<!-- MathJax 3 — config BEFORE loader -->
+<script>
+  window.MathJax = {
+    tex: {
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']],
+      processEscapes: true
+    },
+    svg: { fontCache: 'global' },
+    options: {
+      skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+  };
+</script>
+<script id="MathJax-script" async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+</script>
+
+<!-- Prism.js for code highlighting -->
+<link href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+
+<!-- Mermaid -->
+<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+
+<style>
+/* ============== PAGE & PRINT ============== */
+@page { size: A4; margin: 20mm 18mm 22mm 18mm; }
+@page :first { margin: 0; }
+
+html { hyphens: auto; -webkit-hyphens: auto; }
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  font-family: Inter, "Segoe UI", system-ui, -apple-system, sans-serif;
+  font-size: 12pt;
+  line-height: 1.55;
+  color: #1A2233;
+  text-align: left;
+  margin: 0;
+  background: #FFFFFF;
+}
+p { margin: 0 0 8pt 0; }
+
+/* ============== HEADINGS ============== */
+h1.part-title {
+  font-size: 32pt;
+  font-weight: 700;
+  color: #0F2A4A;
+  line-height: 1.15;
+  text-wrap: balance;
+  margin: 0 0 4pt 0;
+}
+h2 {
+  font-size: 20pt;
+  font-weight: 600;
+  color: #0F2A4A;
+  margin: 24pt 0 8pt 0;
+  padding-bottom: 4pt;
+  border-bottom: 1px solid #E5E9EF;
+  text-wrap: balance;
+}
+h3 {
+  font-size: 14pt;
+  font-weight: 600;
+  color: #1F6FEB;
+  margin: 14pt 0 4pt 0;
+  text-wrap: balance;
+}
+
+/* ============== CODE ============== */
+pre {
+  font-family: "JetBrains Mono", "Fira Code", Consolas, monospace;
+  font-size: 11pt;
+  background: #F4F6FA;
+  padding: 12px 14px 12px 14px;
+  border-radius: 6px;
+  margin: 10pt 0 12pt 0;
+  position: relative;
+  overflow: hidden;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  line-height: 1.45;
+}
+pre[data-lang]::before {
+  content: attr(data-lang);
+  position: absolute;
+  top: 6px;
+  right: 10px;
+  font-size: 9pt;
+  color: #4A5568;
+  font-family: Inter, sans-serif;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+code {
+  font-family: "JetBrains Mono", "Fira Code", Consolas, monospace;
+  font-size: 0.92em;
+}
+:not(pre) > code {
+  background: #F4F6FA;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 0.88em;
+}
+
+/* ============== FIGURES ============== */
+figure {
+  margin: 12pt 0 16pt 0;
+  text-align: center;
+}
+figure .mermaid {
+  display: block;
+  margin: 0 auto;
+}
+figure svg, figure img {
+  display: block;
+  margin: 0 auto;
+  max-width: 100%;
+}
+figcaption {
+  font-size: 10.5pt;
+  color: #4A5568;
+  margin-top: 6pt;
+  text-align: center;
+}
+figcaption strong { color: #0F2A4A; }
+
+/* ============== TABLES ============== */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 8pt 0 14pt 0;
+  font-size: 11pt;
+}
+table caption {
+  font-size: 10.5pt;
+  color: #4A5568;
+  text-align: left;
+  margin-bottom: 4pt;
+  caption-side: top;
+}
+thead th {
+  background: #0F2A4A;
+  color: #FFFFFF;
+  text-align: left;
+  padding: 7px 10px;
+  font-weight: 600;
+  font-size: 10.5pt;
+}
+tbody td {
+  padding: 6px 10px;
+  border-bottom: 1px solid #E5E9EF;
+  vertical-align: top;
+}
+tbody tr:nth-child(odd) { background: #F4F6FA; }
+tbody tr:nth-child(even) { background: #FFFFFF; }
+
+/* ============== CALLOUTS ============== */
+.callout {
+  border-left: 4px solid #1F6FEB;
+  background: #F4F6FA;
+  padding: 10px 14px;
+  margin: 10pt 0 12pt 0;
+  border-radius: 0 4px 4px 0;
+}
+.callout .callout-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: #0F2A4A;
+  margin-bottom: 4pt;
+  font-size: 11pt;
+}
+.callout svg { flex-shrink: 0; }
+.callout p:last-child { margin-bottom: 0; }
+.callout.pitfall { border-left-color: #B45309; }
+.callout.pitfall .callout-head { color: #B45309; }
+.callout.tip { border-left-color: #1F8B4C; }
+.callout.tip .callout-head { color: #1F8B4C; }
+
+/* ============== SECTION BANNERS ============== */
+.part-banner {
+  background: #F4F6FA;
+  color: #0F2A4A;
+  border-left: 3px solid #1F6FEB;
+  padding: 16px 20px;
+  margin: 0 0 18pt 0;
+}
+.part-banner .part-tag {
+  font-size: 11pt;
+  color: #1F6FEB;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  margin-bottom: 4pt;
+}
+.part-banner .deck {
+  font-style: italic;
+  color: #4A5568;
+  font-size: 12.5pt;
+  margin-top: 6pt;
+}
+
+/* ============== PART-LEVEL PAGE BREAKS ============== */
+.part {
+  break-before: page;
+  page-break-before: always;
+}
+.part:first-of-type { break-before: avoid; page-break-before: avoid; }
+
+/* ============== VOLUME OPENER ============== */
+.volume-opener {
+  height: 297mm;
+  width: 210mm;
+  padding: 50mm 24mm 24mm 24mm;
+  position: relative;
+  break-after: page;
+  page-break-after: always;
+  display: flex;
+  flex-direction: column;
+}
+.volume-opener .accent-rule {
+  width: 60mm;
+  height: 3px;
+  background: #1F6FEB;
+  margin-bottom: 12mm;
+}
+.volume-opener .opener-title {
+  font-size: 44pt;
+  font-weight: 700;
+  color: #0F2A4A;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  margin: 0 0 6mm 0;
+  text-wrap: balance;
+}
+.volume-opener .opener-subtitle {
+  font-size: 16pt;
+  font-weight: 400;
+  color: #4A5568;
+  font-style: italic;
+  margin: 0;
+}
+.volume-opener .opener-decoration {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  margin-top: 12mm;
+}
+.volume-opener .date-line {
+  font-size: 11pt;
+  color: #4A5568;
+  margin-top: 12mm;
+  letter-spacing: 0.1em;
+}
+
+/* ============== VOLUME CONTENTS ============== */
+.toc-page { break-after: page; page-break-after: always; }
+.toc-page h2.toc-title {
+  border: none;
+  font-size: 28pt;
+  margin-top: 0;
+}
+.toc-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.toc-list li {
+  display: flex;
+  align-items: baseline;
+  padding: 10px 0;
+  border-bottom: 1px dotted #E5E9EF;
+  font-size: 13pt;
+}
+.toc-list .toc-num {
+  font-weight: 600;
+  color: #1F6FEB;
+  width: 24mm;
+  flex-shrink: 0;
+}
+.toc-list .toc-name {
+  flex: 1;
+  color: #0F2A4A;
+  font-weight: 500;
+}
+.toc-list .toc-page-num {
+  color: #4A5568;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+.companion-note {
+  margin-top: 18mm;
+  padding: 12px 16px;
+  background: #F4F6FA;
+  border-left: 3px solid #1F6FEB;
+  border-radius: 0 4px 4px 0;
+  font-size: 10.5pt;
+  color: #4A5568;
+}
+.companion-note strong { color: #0F2A4A; }
+.companion-note ul { margin: 6pt 0 0 14pt; padding: 0; }
+.companion-note li { margin-bottom: 3pt; }
+
+/* ============== SCREEN-ONLY HINT ============== */
+.screen-hint {
+  margin: 18mm 18mm 0 18mm;
+}
+
+/* ============== MATH ============== */
+.math-display {
+  margin: 10pt 0 12pt 0;
+  text-align: center;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+/* ============== RUNNING HEADER / FOOTER ============== */
+@media print {
+  h1.part-title { string-set: partname content(text); }
+  @page {
+    @top-left {
+      content: string(partname);
+      font-size: 9pt;
+      color: #4A5568;
+      font-family: Inter, sans-serif;
+    }
+    @top-right {
+      content: "LLM Engineering — A Practitioner's Reference · Volume 4";
+      font-size: 9pt;
+      color: #4A5568;
+      font-family: Inter, sans-serif;
+    }
+    @bottom-left {
+      content: "Volume 4 of 5";
+      font-size: 9pt;
+      color: #4A5568;
+      font-family: Inter, sans-serif;
+    }
+    @bottom-center {
+      content: counter(page) " / " counter(pages);
+      font-size: 9pt;
+      color: #4A5568;
+      font-family: Inter, sans-serif;
+    }
+  }
+  @page :first {
+    margin: 0;
+    @top-left { content: ""; }
+    @top-right { content: ""; }
+    @bottom-left { content: ""; }
+    @bottom-center { content: ""; }
+  }
+}
+
+/* ============== PRINT RULES (mandatory block) ============== */
+@media print {
+  .part {
+    break-before: page !important;
+    page-break-before: always !important;
+  }
+
+  figure {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    max-height: 200mm;
+    margin: 12pt 0 16pt 0;
+  }
+  figure .mermaid,
+  figure .mermaid > svg,
+  figure svg,
+  figure img {
+    max-width: 100% !important;
+    max-height: 180mm !important;
+    width: auto !important;
+    height: auto !important;
+    display: block;
+    margin: 0 auto;
+  }
+  figcaption {
+    break-before: avoid !important;
+    page-break-before: avoid !important;
+    margin-top: 6pt;
+  }
+
+  pre {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    max-height: 180mm;
+    overflow: hidden;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+
+  .callout, .math-display {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  table { break-inside: auto; }
+  thead { display: table-header-group; }
+  tfoot { display: table-footer-group; }
+  tr, td, th {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  h1, h2, h3, h4 {
+    break-after: avoid !important;
+    page-break-after: avoid !important;
+    text-wrap: balance;
+  }
+
+  .section-banner, .part-banner {
+    break-after: avoid !important;
+    page-break-after: avoid !important;
+  }
+
+  p, li, dd { widows: 2; orphans: 2; }
+
+  .no-print { display: none !important; }
+}
+
+/* Screen padding for non-print viewing */
+@media screen {
+  body { max-width: 210mm; margin: 0 auto; padding: 18mm; background: #FFFFFF; }
+  .volume-opener { margin: -18mm -18mm 0 -18mm; }
+}
+</style>
+</head>
+<body>
+
+<!-- ====================================================== -->
+<!-- VOLUME OPENER (page 1, no header/footer)                -->
+<!-- ====================================================== -->
+<section class="volume-opener">
+  <div class="accent-rule"></div>
+  <h1 class="opener-title">LLM Engineering<br>— A Practitioner's Reference</h1>
+  <p class="opener-subtitle">Volume 4 · LLMOps · Multimodal · System Design</p>
+
+  <div class="opener-decoration">
+    <svg viewBox="0 0 360 220" width="320" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <!-- decorative network-of-services illustration -->
+      <defs>
+        <linearGradient id="og-grad" x1="0" x2="1" y1="0" y2="1">
+          <stop offset="0" stop-color="#1F6FEB" stop-opacity="0.18"/>
+          <stop offset="1" stop-color="#0F2A4A" stop-opacity="0.05"/>
+        </linearGradient>
+      </defs>
+      <rect x="20" y="20" width="320" height="180" rx="6" fill="url(#og-grad)"/>
+      <!-- three layered horizontal tiers -->
+      <g stroke="#0F2A4A" stroke-width="1.4" fill="#FFFFFF">
+        <rect x="50" y="44"  width="260" height="34" rx="4"/>
+        <rect x="50" y="92"  width="260" height="34" rx="4"/>
+        <rect x="50" y="140" width="260" height="34" rx="4"/>
+      </g>
+      <!-- node clusters -->
+      <g fill="#1F6FEB">
+        <circle cx="80"  cy="61"  r="5"/><circle cx="180" cy="61"  r="5"/><circle cx="280" cy="61"  r="5"/>
+        <circle cx="80"  cy="109" r="5"/><circle cx="180" cy="109" r="5"/><circle cx="280" cy="109" r="5"/>
+        <circle cx="80"  cy="157" r="5"/><circle cx="180" cy="157" r="5"/><circle cx="280" cy="157" r="5"/>
+      </g>
+      <!-- connections -->
+      <g stroke="#1F6FEB" stroke-width="1" stroke-opacity="0.6" fill="none">
+        <path d="M 80,66 L 80,104"/>
+        <path d="M 180,66 L 180,104"/>
+        <path d="M 280,66 L 280,104"/>
+        <path d="M 80,114 L 80,152"/>
+        <path d="M 180,114 L 180,152"/>
+        <path d="M 280,114 L 280,152"/>
+        <path d="M 80,66 C 130,80 130,90 180,104"/>
+        <path d="M 280,66 C 230,80 230,90 180,104"/>
+      </g>
+      <text x="60" y="38" font-family="Inter, sans-serif" font-size="11" fill="#0F2A4A" font-weight="600">api · gateway · models · retrieval · observability</text>
+    </svg>
+  </div>
+
+  <div class="date-line">2026 EDITION</div>
+</section>
+
+<!-- ====================================================== -->
+<!-- SCREEN-ONLY "How to save as PDF" CALLOUT                -->
+<!-- ====================================================== -->
+<div class="no-print screen-hint">
+  <div class="callout">
+    <div class="callout-head">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      How to save this volume as a PDF
+    </div>
+    <p>Open this file in <strong>Chrome</strong> or Edge. Wait until every diagram has finished rendering on screen. Press <strong>Ctrl+P / ⌘P</strong>. Set destination to <strong>"Save as PDF"</strong>. Under "More settings": <strong>Margins → Default</strong>, <strong>Paper size → A4</strong>, <strong>Scale → Default (100 %)</strong>, and <strong>enable "Background graphics"</strong> so banners and callout fills render. Then click <strong>Save</strong>.</p>
+  </div>
+</div>
+
+<!-- ====================================================== -->
+<!-- VOLUME CONTENTS (page 2)                                -->
+<!-- ====================================================== -->
+<section class="toc-page">
+  <h2 class="toc-title">Volume Contents</h2>
+  <p style="color:#4A5568; font-size:11pt; margin-bottom: 14pt;">This volume contains Parts 10 through 12 of the reference. Each Part begins on a new page; section headings are marked with a navy accent.</p>
+
+  <ul class="toc-list">
+    <li>
+      <span class="toc-num">Part 10</span>
+      <span class="toc-name">MLOps &amp; LLMOps</span>
+      <span class="toc-page-num">3</span>
+    </li>
+    <li>
+      <span class="toc-num">Part 11</span>
+      <span class="toc-name">Multimodal &amp; beyond text</span>
+      <span class="toc-page-num">11</span>
+    </li>
+    <li>
+      <span class="toc-num">Part 12</span>
+      <span class="toc-name">System design playbook</span>
+      <span class="toc-page-num">16</span>
+    </li>
+  </ul>
+
+  <div class="companion-note">
+    <strong>Companion volumes in this reference</strong>
+    <ul>
+      <li><strong>Volume 1</strong> · Parts 1-3 — Foundations · Modern Model Landscape · Adapting Models</li>
+      <li><strong>Volume 2</strong> · Parts 4-6 — Retrieval-Augmented Generation · Agentic Systems · Inference Optimization &amp; Serving</li>
+      <li><strong>Volume 3</strong> · Parts 7-9 — Production Engineering · Evaluation · Safety &amp; Security</li>
+      <li><strong>Volume 5</strong> · Parts 13-15 — Trends · Curated Resources · Glossary</li>
+    </ul>
+  </div>
+</section>
+
+
+<!-- ====================================================== -->
+<!-- PART 10 — MLOps & LLMOps                                -->
+<!-- ====================================================== -->
+<section class="part" id="part-10">
+  <div class="part-banner">
+    <div class="part-tag">PART 10</div>
+    <h1 class="part-title">MLOps &amp; LLMOps</h1>
+    <p class="deck"><em>The discipline of shipping, monitoring, and continuously improving language-model systems without breaking what already works.</em></p>
+  </div>
+
+  <h2>The lifecycle: CI, CD, and continuous training</h2>
+  <p>Production machine-learning systems run on three nested loops. <strong>Continuous integration</strong> validates that every commit still builds, type-checks, and passes unit and component tests. <strong>Continuous delivery</strong> guarantees that any green main-branch commit can be promoted to production in minutes, not weeks, with a one-click rollback. <strong>Continuous training</strong> (CT) is the loop distinctive to ML: as production data and labels accumulate, models are periodically retrained, evaluated against a frozen golden set, and — only if they win — promoted.</p>
+
+  <p>For LLM applications, "training" is rarely a from-scratch pretrain. It is more often an adapter refresh, a fine-tune of a small open-weights model, a retrieval index rebuild, or a prompt-pack update tied to a versioned artifact. The shape of the loop is the same: trigger → reproducible build → automated evaluation → gated promotion → observed in production → trigger again.</p>
+
+  <figure>
+    <svg viewBox="0 0 520 380" width="480" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="LLMOps lifecycle wheel showing six stages">
+      <defs>
+        <style>
+          .wheel-text { font-family: Inter, sans-serif; font-size: 13px; fill: #0F2A4A; font-weight: 600; }
+          .wheel-center-l { font-family: Inter, sans-serif; font-size: 15px; fill: #0F2A4A; font-weight: 700; }
+          .wheel-center-s { font-family: Inter, sans-serif; font-size: 11px; fill: #4A5568; }
+        </style>
+        <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0,0 L 8,5 L 0,10 z" fill="#1F6FEB"/>
+        </marker>
+      </defs>
+
+      <!-- 6-segment donut wheel: outer r=160, inner r=80, center (260,190); each slice = 60° -->
+      <!-- Slice 1 (-90 → -30) Data prep -->
+      <path d="M 260,30 A 160,160 0 0 1 398.56,110 L 329.28,150 A 80,80 0 0 0 260,110 Z" fill="#E8EFFB" stroke="#0F2A4A" stroke-width="1.4"/>
+      <!-- Slice 2 (-30 → 30)  Experimentation -->
+      <path d="M 398.56,110 A 160,160 0 0 1 398.56,270 L 329.28,230 A 80,80 0 0 0 329.28,150 Z" fill="#F4F6FA" stroke="#0F2A4A" stroke-width="1.4"/>
+      <!-- Slice 3 (30 → 90)   Training -->
+      <path d="M 398.56,270 A 160,160 0 0 1 260,350 L 260,270 A 80,80 0 0 0 329.28,230 Z" fill="#E8EFFB" stroke="#0F2A4A" stroke-width="1.4"/>
+      <!-- Slice 4 (90 → 150)  Eval -->
+      <path d="M 260,350 A 160,160 0 0 1 121.44,270 L 190.72,230 A 80,80 0 0 0 260,270 Z" fill="#F4F6FA" stroke="#0F2A4A" stroke-width="1.4"/>
+      <!-- Slice 5 (150 → 210) Deploy -->
+      <path d="M 121.44,270 A 160,160 0 0 1 121.44,110 L 190.72,150 A 80,80 0 0 0 190.72,230 Z" fill="#E8EFFB" stroke="#0F2A4A" stroke-width="1.4"/>
+      <!-- Slice 6 (210 → 270) Monitor -->
+      <path d="M 121.44,110 A 160,160 0 0 1 260,30 L 260,110 A 80,80 0 0 0 190.72,150 Z" fill="#F4F6FA" stroke="#0F2A4A" stroke-width="1.4"/>
+
+      <!-- Inner hub: solid white over arc joins -->
+      <circle cx="260" cy="190" r="80" fill="#FFFFFF" stroke="#0F2A4A" stroke-width="1.4"/>
+
+      <!-- Center text (3 lines) -->
+      <text x="260" y="180" text-anchor="middle" class="wheel-center-l">Continuous</text>
+      <text x="260" y="200" text-anchor="middle" class="wheel-center-l">Training</text>
+      <text x="260" y="220" text-anchor="middle" class="wheel-center-s">(CT) loop</text>
+
+      <!-- Stage labels at slice centroids (mid-radius 120) -->
+      <text x="320" y="91"  text-anchor="middle" class="wheel-text">Data prep</text>
+      <text x="380" y="194" text-anchor="middle" class="wheel-text">Experiment</text>
+      <text x="320" y="298" text-anchor="middle" class="wheel-text">Training</text>
+      <text x="200" y="298" text-anchor="middle" class="wheel-text">Eval</text>
+      <text x="140" y="194" text-anchor="middle" class="wheel-text">Deploy</text>
+      <text x="200" y="91"  text-anchor="middle" class="wheel-text">Monitor</text>
+
+      <!-- Outer rim direction arrows (4 short arcs implying a clockwise flow) -->
+      <g fill="none" stroke="#1F6FEB" stroke-width="2.2" stroke-linecap="round">
+        <path d="M 351,49  A 160,160 0 0 1 408,118" marker-end="url(#arrow)"/>
+        <path d="M 408,262 A 160,160 0 0 1 351,331" marker-end="url(#arrow)"/>
+        <path d="M 169,331 A 160,160 0 0 1 112,262" marker-end="url(#arrow)"/>
+        <path d="M 112,118 A 160,160 0 0 1 169,49"  marker-end="url(#arrow)"/>
+      </g>
+    </svg>
+    <figcaption><strong>Figure 10.1</strong> · The LLMOps lifecycle as a six-stage continuous-training wheel. Each stage feeds the next, but feedback from <em>Monitor</em> can short-circuit any earlier stage when drift, cost, or quality alerts fire.</figcaption>
+  </figure>
+
+  <h2>Experiment tracking and the model registry</h2>
+  <p>Tracking captures every meaningful artifact of a run: hyperparameters, dataset version hash, code commit, environment specification, metrics, and the resulting weights or LoRA file. <strong>MLflow</strong> remains the de facto open-source choice; <strong>Weights &amp; Biases</strong> dominates among research-heavy teams; <strong>Comet</strong> and <strong>Neptune</strong> occupy similar ground with different ergonomics. The tracking server feeds a <strong>model registry</strong> that assigns a versioned identifier to each artifact and records its lineage.</p>
+
+  <p>Treat models as you treat application code: semantic versioning, signed artifacts, immutable promotion (the <code>v2.3.1</code> released last Tuesday is the <code>v2.3.1</code> running in production today), and a clear traceability path from any production response back to the exact weights, adapter, and prompt template that produced it. The convention many teams settle on is <code>major.minor.patch</code> where <em>major</em> changes signal breaking output-shape or behavior shifts, <em>minor</em> versions encode capability gains on the same I/O contract, and <em>patch</em> versions cover hotfixes — typically prompt edits or retrieval index rebuilds with no model swap.</p>
+
+  <h3>Model signatures and reproducible promotion</h3>
+  <p>A signature pins down the input schema (text fields, allowed roles, max tokens), the output schema, the tokenizer, and the safety filters that wrap the model. A registry that enforces signatures rejects a v2.4.0 release whose output shape silently dropped a field — exactly the kind of regression that integration tests miss but downstream consumers catch the hard way.</p>
+
+  <h2>Feature stores in an LLM world</h2>
+  <p>Feature stores — <strong>Feast</strong>, <strong>Tecton</strong>, <strong>Hopsworks</strong> — were built for tabular ML, where the same engineered feature must be computed identically for offline training and online inference. For LLM workflows the picture is different. The "features" in a chat application are <em>prompt context</em>: user history, retrieved documents, tool-call results. Most of these are produced ad hoc per request and do not benefit from a feature store's caching and point-in-time-correctness guarantees.</p>
+
+  <p>Where feature stores genuinely help LLM systems is in <em>structured side data</em> that drives prompts: per-user preferences, account tier, recent purchases, computed user embeddings, churn-risk scores. When the same hot user attribute is consumed by both a recommendation model and an LLM-powered assistant, a single materialized source eliminates a class of skew bugs. Outside that case, plain caches and a retrieval tier usually suffice.</p>
+
+  <h2>Pipeline orchestration and data versioning</h2>
+  <p>The orchestrator landscape is crowded. <strong>Airflow</strong> remains the workhorse for batch ETL and scheduled retrains. <strong>Kubeflow Pipelines</strong> targets Kubernetes-native ML on GPUs. <strong>Metaflow</strong>, <strong>Flyte</strong>, <strong>Prefect</strong>, <strong>Dagster</strong>, and <strong>ZenML</strong> each take a different stance on Python ergonomics, typed I/O, and local vs cloud execution. Selection criteria worth weighing: type safety on task inputs, lineage tracking, retry granularity, support for GPU resource scheduling, and whether your team will tolerate a DAG-as-code authoring style or prefers decorators.</p>
+
+  <p>Data versioning closes the reproducibility gap that ordinary git cannot. <strong>DVC</strong> ties large blobs to commits via content hashes and a remote object store. <strong>lakeFS</strong> overlays a git-like branch/merge model on top of S3-compatible storage. <strong>Delta Lake</strong> brings ACID transactions and time-travel reads to Parquet on a data lake. The choice depends on whether your data is file-blob (DVC), bucket-scale (lakeFS), or table-shaped (Delta).</p>
+
+  <h2>Containerization, runtimes, and cloud platforms</h2>
+  <p>Inference workloads run in containers whether they live on a single GPU box or on a thousand-node cluster. <strong>Docker</strong> images encapsulate the runtime; <strong>Kubernetes</strong> schedules and scales them. On top of plain Kubernetes, <strong>KServe</strong> adds model-serving primitives — predict/explain endpoints, canary rollouts, autoscaling on inference QPS — and <strong>Knative</strong> contributes scale-to-zero for long-tail models that are queried infrequently.</p>
+
+  <p>Managed platforms — <strong>AWS SageMaker</strong>, <strong>GCP Vertex AI</strong>, <strong>Azure ML</strong>, <strong>Databricks</strong> — bundle most of the lifecycle into a single console with vendor-specific glue. They reduce the up-front engineering burden but increase coupling: a hand-rolled stack of MLflow + Argo + KServe is portable across clouds; a SageMaker pipeline is not. Most production teams end up somewhere on the spectrum: managed for training and registry, hand-rolled for the request path that touches the customer.</p>
+
+  <h2>Monitoring and drift</h2>
+  <p>Four flavors of drift matter in production LLM systems. <strong>Input drift</strong>: the distribution of incoming prompts shifts, a new use case appears, or a tenant onboards. <strong>Output drift</strong>: average completion length, refusal rate, or sentiment changes — often the first signal of a silent model swap upstream. <strong>Embedding drift</strong>: the distribution of retrieved-context embeddings shifts, signaling that the retrieval corpus is decaying or that user intent has moved. <strong>Hallucination rate</strong>: the share of outputs an automated grader flags as ungrounded or factually wrong, tracked over a rolling window against a fixed reference set.</p>
+
+  <p>Tools like <strong>Evidently</strong>, <strong>WhyLabs</strong>, <strong>Arize</strong>, and <strong>Fiddler</strong> compute drift statistics on streaming production data. For LLM-specific signals — token usage, tool-call success rate, eval pass rate by feature flag — the more common stack now is a purpose-built layer (LangSmith, LangFuse) feeding a general-purpose metrics store (Prometheus or a hosted equivalent).</p>
+
+  <div class="callout pitfall">
+    <div class="callout-head">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      Pitfall · Silent provider model swaps
+    </div>
+    <p>Hosted model APIs sometimes update the model that backs an alias name without a major-version bump. A pipeline that pinned to <code>gpt-4o</code> rather than a dated revision can wake up to subtly different outputs and a quietly degraded eval score. Pin to dated revisions where the provider exposes them, and run a daily smoke eval against your golden set to detect the change within hours rather than weeks.</p>
+  </div>
+
+  <h2>LLMOps specifics</h2>
+
+  <h3>Prompt registry and versioning</h3>
+  <p>Prompts are code. Store them in a version-controlled registry — a directory of YAML files in your repo, a managed store like LangSmith or PromptLayer, or a dedicated table in your control plane — with the same review, diff, and rollback discipline you apply to source. Each prompt entry should carry an ID, a semantic version, the model and parameters it was tuned against, and the eval-suite scores at promotion. Changing a prompt without a version bump is the LLM equivalent of editing production SQL inline.</p>
+
+  <h3>The eval harness in CI</h3>
+  <p>Block pull requests on regressions the same way you block them on failing unit tests. The harness reads the proposed prompt or model bundle, runs it across a frozen suite of inputs (the <em>golden set</em>), grades each output with a deterministic checker or an LLM-as-judge, and compares aggregate scores to the current main-branch baseline. A regression beyond a small tolerance — typically two percentage points on key metrics — fails the job. Variance is real with LLM-as-judge; either run multiple seeds and average, or scope the gate to deterministic checks (exact match, JSON schema validity, regex, retrieval-recall@k).</p>
+
+  <pre data-lang="yaml"><code class="language-yaml">name: llm-eval
+on: [pull_request]
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - run: pip install -e .[eval]
+      - name: Run eval harness
+        env: { OPENAI_API_KEY: "${{ secrets.OPENAI_API_KEY }}" }
+        run: |
+          python -m evals.run --suite golden --baseline main \
+            --threshold 0.02 --report eval-report.json</code></pre>
+
+  <h3>The LLM gateway pattern</h3>
+  <p>A gateway is a thin internal service that fronts every model call from your application. It centralizes authentication, per-tenant rate limiting, retries, fallbacks, prompt-template resolution, and structured logging. With a gateway, swapping a hosted provider for a self-hosted runtime is a config change, not a refactor; rolling out a 1 % canary on a new model version is a flag flip; and per-call cost attribution comes for free because every request flows through one place that knows which feature, tenant, and prompt-version it serves.</p>
+
+  <h3>The feedback flywheel</h3>
+  <p>Every interaction is a labeling opportunity. Capture explicit signals (thumbs-up/down, in-place edits, retries) and implicit signals (session length, copy events, downstream conversion) into a typed feedback store. Schedule a job that promotes the cleanest of these into evaluation suites or fine-tuning datasets. Over time, the gap between offline benchmarks and live production behavior narrows, because the suite itself is built from production reality rather than from synthetic prompts a research team hand-wrote eighteen months ago.</p>
+
+  <h3>Token-level FinOps</h3>
+  <p>Cost attribution starts at the gateway. Tag every request with <code>tenant</code>, <code>feature</code>, <code>prompt_id</code>, and <code>model</code>; write input and output token counts to a metering pipeline; aggregate into a daily cost ledger. From there: per-tenant showback dashboards, budget alerts when a feature crosses its envelope, and automatic fallbacks — when daily spend exceeds threshold, the gateway downshifts a non-critical feature from a frontier model to a smaller hosted model or to a self-hosted alternative.</p>
+
+  <p>The unit cost equation worth keeping at hand:</p>
+  <div class="math-display">
+  $$ C_{\text{req}} \;=\; \frac{p_{\text{in}}\, t_{\text{in}} + p_{\text{out}}\, t_{\text{out}}}{10^{6}} $$
+  </div>
+  <p>where \(p_{\text{in}}\) and \(p_{\text{out}}\) are dollar prices per million input and output tokens and \(t_{\text{in}}\), \(t_{\text{out}}\) are the per-request token counts. Output tokens dominate for chat-shaped workloads; input tokens dominate for retrieval-heavy and long-context flows. Knowing which side dominates tells you whether prompt compression or output truncation pays off.</p>
+
+  <h3>Multi-region deployment and rollback</h3>
+  <p>For latency-sensitive workloads, model serving fans out across regions and traffic is steered by a global load balancer with weight-based or geo-based routing. Blue-green deployments hold two parallel stacks; traffic shifts atomically between them with a single weight change and a fast rollback. Canary deployments release a new model version to a small slice (often 1-5 %) and watch SLO and quality metrics before widening. <strong>Silent regressions</strong> — outputs that pass schema and latency gates but degrade end-user behavior — are the failure mode canaries are designed to catch; pair them with a held-out automated quality eval that runs on the canary slice continuously.</p>
+
+  <h2>Observability and the OTel GenAI conventions</h2>
+  <p>The shift toward standardized telemetry has been quick. <strong>OpenTelemetry's GenAI semantic conventions</strong> define a common shape for spans and metrics emitted by LLM applications: span attributes for <code>gen_ai.system</code>, <code>gen_ai.request.model</code>, <code>gen_ai.usage.input_tokens</code>, <code>gen_ai.usage.output_tokens</code>, and standard event names for prompt and completion payloads. The conventions are still evolving, but adopting them now keeps your traces forward-compatible and lets a single backend ingest data from multiple SDKs.</p>
+
+  <p>The application-layer tooling — <strong>LangSmith</strong>, <strong>LangFuse</strong>, <strong>Helicone</strong>, <strong>OpenLLMetry</strong> — emits these conventions natively and adds LLM-specific views: prompt diffing, eval-run dashboards, replay against an updated prompt or model, cost rollups by tag. The same data, exported in OTel format, also flows into ordinary observability backends, which means SREs see LLM traces in the same tool they already use for the rest of the system.</p>
+
+  <div class="callout tip">
+    <div class="callout-head">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
+      Senior tip · Make eval results a first-class artifact
+    </div>
+    <p>Treat the JSON eval report from CI like a build artifact: store it next to the model version, link it from the registry record, and surface its summary in the PR description. Three months later, when someone asks "why did we ship v2.4 over v2.3?", the answer is one click away — not a forensic exercise across Slack threads.</p>
+  </div>
+
+  <p>A small Python snippet that emits an OTel-flavored span around a model call is short enough to fit on a card:</p>
+
+  <pre data-lang="python"><code class="language-python">from opentelemetry import trace
+tracer = trace.get_tracer("app.llm")
+
+def call_model(client, model, messages):
+    with tracer.start_as_current_span("gen_ai.chat") as span:
+        span.set_attribute("gen_ai.system", "openai")
+        span.set_attribute("gen_ai.request.model", model)
+        resp = client.chat.completions.create(model=model, messages=messages)
+        u = resp.usage
+        span.set_attribute("gen_ai.usage.input_tokens", u.prompt_tokens)
+        span.set_attribute("gen_ai.usage.output_tokens", u.completion_tokens)
+        return resp.choices[0].message.content</code></pre>
+</section>
+
+
+<!-- ====================================================== -->
+<!-- PART 11 — Multimodal & beyond text                      -->
+<!-- ====================================================== -->
+<section class="part" id="part-11">
+  <div class="part-banner">
+    <div class="part-tag">PART 11</div>
+    <h1 class="part-title">Multimodal &amp; beyond text</h1>
+    <p class="deck"><em>When the input is no longer just text, the engineering surface grows — but most production patterns stay the same.</em></p>
+  </div>
+
+  <h2>Vision-language models</h2>
+  <p>Vision-language models (VLMs) accept interleaved text and image tokens and emit text. The open-weights ecosystem is anchored by <strong>LLaVA</strong>-style architectures (a vision encoder feeding a projection layer into an instruction-tuned LLM), with <strong>Qwen-VL</strong> and <strong>InternVL</strong> setting the practical bar on chart understanding, document QA, and grounded visual reasoning. On the hosted side, <strong>GPT-4o</strong> with vision, the <strong>Gemini</strong> family, and <strong>Claude</strong> with vision converge on a common API shape: a list of content parts where each part is either a text block or an image (URL, base64, or file ID).</p>
+
+  <p>The interface is uniform enough that you can write a single client wrapper and route across providers. Where they differ is in <em>quality on specific subtasks</em> (small text in diagrams, multi-page document layout, high-resolution detail extraction), in <em>image-token economics</em> (some bill per resized tile, others by total pixels), and in <em>safety filters</em> (faces, identifiable people, document fields). Pick by running your task against each on a representative held-out set; do not pick by leaderboard.</p>
+
+  <p>A minimal multimodal call looks the same across the major providers:</p>
+
+  <pre data-lang="python"><code class="language-python">from openai import OpenAI
+client = OpenAI()
+
+resp = client.chat.completions.create(
+  model="gpt-4o",
+  messages=[{
+    "role": "user",
+    "content": [
+      {"type": "text", "text": "Extract all line items as JSON."},
+      {"type": "image_url",
+       "image_url": {"url": f"data:image/png;base64,{img_b64}",
+                     "detail": "high"}},
+    ],
+  }],
+  response_format={"type": "json_object"},
+)
+print(resp.choices[0].message.content)</code></pre>
+
+  <h2>Visual document retrieval</h2>
+  <p>Traditional document pipelines parse PDFs into text via OCR, chunk the text, and embed the chunks. The pipeline is brittle — OCR loses table structure, chart axes, and multi-column layouts — and tuning it across a heterogeneous corpus is a months-long exercise.</p>
+
+  <p><strong>ColPali</strong> and the broader family of late-interaction visual retrievers ("page-image embeddings") flip the contract. Each PDF page is rendered as an image, passed through a vision encoder fine-tuned for retrieval, and stored as a small set of patch embeddings. Query text is embedded once; relevance is scored by a MaxSim-style late interaction across query tokens and page patches. In practice the approach delivers strong retrieval quality on visually-rich documents — invoices, financial reports, scientific papers with figures — without ever running OCR.</p>
+
+  <p>The trade is index size and storage cost. A page that previously embedded as a single 1024-dimensional vector now stores tens of patch vectors. The right pattern for most production systems: ColPali-style retrieval at the recall stage, then a VLM call on the top-k page images for grounded answer synthesis. If extracted structured data is also needed downstream, parse only the pages that the retriever surfaced — by then you have shrunk the OCR target by two orders of magnitude.</p>
+
+  <div class="callout">
+    <div class="callout-head">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      Key idea · Skip OCR when the model can read pixels
+    </div>
+    <p>Before investing weeks in an OCR + layout-parser + table-detector pipeline, prototype a page-image-first retriever and a vision-capable answerer on the same corpus. The pixel-native path frequently wins on quality and ships in a fraction of the time. Reach for OCR when the answer must be structured data extracted from every page, not just the few the user asked about.</p>
+  </div>
+
+  <h2>Speech and audio</h2>
+  <p>Speech models split into three useful classes. <strong>Transcription</strong> (speech-to-text): <strong>Whisper-v3</strong> remains the open-weights default for batch and near-real-time, with strong multilingual coverage. Hosted alternatives like Deepgram, AssemblyAI, and the major cloud APIs trade openness for lower word-error rates on phone audio and faster real-time streaming.</p>
+
+  <p><strong>Audio understanding</strong> beyond raw transcription is now first-class: <strong>Voxtral</strong> and similar audio-language models accept raw audio plus a text instruction and emit text, which collapses transcribe-then-prompt pipelines into a single call and preserves prosodic cues (sarcasm, hesitation, speaker affect) that text loses. Speaker diarization (who-said-what) and audio embeddings (for clustering and retrieval) are usually still separate models that run in parallel.</p>
+
+  <p><strong>Real-time speech-to-speech</strong> is the newest tier. Models that consume streaming audio frames and emit streaming audio frames — turn-taking, interruption handling, and prosody control built in — make conversational voice agents tractable without the latency stack-up of ASR → LLM → TTS. The engineering trade-off is loss of intermediate text: logging, evaluation, and content moderation must now operate on audio or on a parallel transcription stream.</p>
+
+  <h2>Document AI and structured extraction</h2>
+  <p>Layout-aware models (LayoutLM-family, DocLayout, Donut) bring positional information into the encoder, which matters for forms, tables, and any document where reading order is non-linear. Modern frontier VLMs increasingly subsume these tasks: a single prompt with a JSON schema and a page image often outperforms a hand-tuned layout pipeline, especially on the tail of formats where there is not enough labeled data to fine-tune a specialist.</p>
+
+  <p>For tables specifically, two patterns dominate in 2025-2026. The first is <em>schema-driven extraction</em>: hand the model a target JSON shape and the page image, validate the output against the schema, and retry on failure. The second is <em>two-pass reconciliation</em>: extract the table independently with two different methods (a layout parser and a VLM, say) and reconcile cells where they disagree. The second pass costs more but raises precision on financial and clinical data where a single misread cell is expensive.</p>
+
+  <h2>Generation as a step inside an agent</h2>
+  <p>Image and video generation models are increasingly invoked as tools by agentic systems rather than as user-facing endpoints. A document-drafting agent generates supporting illustrations; a marketing agent generates A/B-tested visuals from a brand spec; a video-editing agent synthesizes B-roll. The engineering implications mirror those of any other tool call: deterministic seeds where the model supports them, content-safety filtering on outputs, caching by prompt hash, and cost guardrails because image and video generations are typically an order of magnitude more expensive than a text completion. Treat generated assets as immutable artifacts in object storage, referenced by content hash, so a regenerated identical request returns the cached file rather than billing twice.</p>
+</section>
+
+
+<!-- ====================================================== -->
+<!-- PART 12 — System design playbook                        -->
+<!-- ====================================================== -->
+<section class="part" id="part-12">
+  <div class="part-banner">
+    <div class="part-tag">PART 12</div>
+    <h1 class="part-title">System design playbook</h1>
+    <p class="deck"><em>The pieces are familiar — API tier, gateway, retrieval, observability — but the failure modes and the unit economics are not.</em></p>
+  </div>
+
+  <h2>Reference architecture for a production LLM application</h2>
+  <p>A workable production architecture has four tiers and a sidecar. The <strong>stateless API tier</strong> terminates user traffic, handles auth and tenant resolution, and forwards normalized requests inward. The <strong>model gateway</strong> centralizes prompt-template resolution, rate limiting, retries, fallbacks, and per-call telemetry. The <strong>retrieval and engines</strong> tier holds the vector index, lexical index, reranker, and the model runtime itself (hosted API, self-hosted vLLM/TGI, or both behind a chooser). The <strong>eval and observability sidecar</strong> samples traffic, runs online evals, and ships traces to the metrics store. A separate <strong>feedback store</strong> — discussed in prose below rather than drawn as a fifth tier — captures user signals into a typed event log that downstream jobs lift into eval suites and fine-tuning sets.</p>
+
+  <p>Statelessness in the API tier is non-negotiable for horizontal scaling. Conversation state lives in a session store keyed by conversation ID and refreshed on each turn; the API tier itself holds no per-user memory. The gateway exists to absorb provider quirks: it normalizes message shapes, retries on transient 5xx with jittered backoff, falls back to a secondary provider on hard failures, and short-circuits to cached responses on prompt-hash hits where appropriate.</p>
+
+  <figure>
+    <div class="mermaid">
+flowchart TB
+  Client([Client])
+
+  subgraph API[API tier]
+    LB[Edge LB]
+    APP[API service]
+    AUTH[Auth + tenant]
+  end
+
+  subgraph GW[Model gateway]
+    ROUTE[Model router]
+    PROMPT[Prompt registry]
+    LIMIT[Rate limit + budget]
+  end
+
+  subgraph ENG[Retrieval + engines]
+    VEC[(Vector index)]
+    BM25[(Lexical index)]
+    RUN[Model runtime]
+  end
+
+  subgraph OBS[Eval + observability]
+    TRACE[(Trace store)]
+    EVAL[Online eval]
+    METRIC[Metrics + alerts]
+  end
+
+  Client --> LB --> APP --> AUTH --> ROUTE
+  ROUTE --> PROMPT
+  ROUTE --> LIMIT
+  ROUTE --> VEC
+  ROUTE --> BM25
+  ROUTE --> RUN
+  ROUTE --> TRACE
+  TRACE --> EVAL
+  TRACE --> METRIC
+    </div>
+    <figcaption><strong>Figure 12.1</strong> · Reference production architecture for an LLM application. A separate feedback store (not shown) consumes user signals from the API tier and publishes them into a typed event log used by offline eval and fine-tuning jobs.</figcaption>
+  </figure>
+
+  <h2>Multi-tenancy, isolation, and quotas</h2>
+  <p>Most LLM applications serve more than one tenant. Hard isolation — a separate stack per tenant — is reserved for regulated workloads (defense, healthcare with PHI, certain financial flows) where data co-mingling is unacceptable. The common case is <strong>logical isolation</strong>: a single shared stack with tenant ID propagated through every layer as a first-class request attribute, and storage partitioned by tenant.</p>
+
+  <p>Quotas operate at three levels. <strong>Per-tenant quotas</strong> cap requests-per-second and tokens-per-minute, sized by plan tier and enforced at the gateway. <strong>Model-level quotas</strong> protect upstream providers from saturation: a single misbehaving tenant cannot exhaust the global rate limit on the frontier model. <strong>Per-feature quotas</strong> guard against runaway internal jobs — a batch summarization that quietly enters an infinite retry loop should hit its own ceiling long before it eats the tenant's headroom. Token-bucket algorithms with redis-backed counters handle all three with one mechanism.</p>
+
+  <h2>Scaling LLM workloads</h2>
+  <p>Vertical scaling — bigger GPUs, more memory — runs into a wall fast. Frontier models already saturate H100/H200 nodes; the next step is multi-node tensor and pipeline parallelism, which is operationally heavier than most teams want. Horizontal scaling is the better default for serving: replicate the runtime behind the gateway, autoscale on a meaningful signal, and let the load balancer distribute work.</p>
+
+  <p>The signal worth autoscaling on is rarely CPU. <strong>Tokens-per-second throughput</strong> per replica and <strong>queue depth</strong> at the runtime are far better proxies for saturation. CPU is a misleading low-water mark on GPU-bound services; queue depth captures the moment when latency starts to blow out. A practical setup: scale up when sustained queue depth exceeds <em>k</em> requests per replica, scale down when queue depth has been zero for several minutes and replica count is above the floor.</p>
+
+  <p>Concurrency tuning at the runtime layer matters as much as replica count. Continuous-batching servers (vLLM, TGI, SGLang) extract substantially more throughput per GPU when <em>max_num_seqs</em> is sized to the workload's prompt-length distribution. Set it too low and the GPU sits idle; set it too high and KV-cache pressure causes preemption and tail-latency spikes. Profile against representative traffic, not against synthetic uniform-length prompts.</p>
+
+  <div class="callout pitfall">
+    <div class="callout-head">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      Pitfall · Average latency hides the tail
+    </div>
+    <p>p50 latency on a continuous-batching server can stay flat while p99 doubles, because long-prompt outliers preempt shorter ones in the batch. Always autoscale and alert on p95 or p99 — not on the mean — and chart latency against prompt-length percentile to catch the failure pattern early.</p>
+  </div>
+
+  <h2>Cost modeling: a worked example</h2>
+  <p>The recurring decision in serving is hosted-API versus self-hosted. The break-even depends on three things: traffic volume, the model size you actually need, and the GPU you can keep busy. A small worked example sharpens the intuition.</p>
+
+  <p>Assume a chat workload with average prompt length 2,000 input tokens, average completion 400 output tokens, sustained 10 requests/second around the clock. Hosted-API option: a mid-tier model at $0.50 per million input tokens and $1.50 per million output tokens. Self-hosted option: an 8B model on a single H100-class GPU billed at $3.50/hour, throughput around 30 requests/second on the same prompt shape with continuous batching.</p>
+
+  <table>
+    <caption><strong>Table 12.1</strong> · Worked monthly cost comparison for a 10 req/s chat workload. Self-hosted assumes one primary GPU plus one hot standby for HA; hosted assumes flat per-token pricing with no commitment discount.</caption>
+    <thead>
+      <tr>
+        <th>Input</th>
+        <th>Hosted API option</th>
+        <th>Self-hosted option (8B + vLLM)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Input price</td><td>$0.50 / 1M tokens</td><td>n/a</td></tr>
+      <tr><td>Output price</td><td>$1.50 / 1M tokens</td><td>n/a</td></tr>
+      <tr><td>GPU price</td><td>n/a</td><td>$3.50 / GPU-hour</td></tr>
+      <tr><td>Avg prompt length</td><td>2,000 tokens</td><td>2,000 tokens</td></tr>
+      <tr><td>Avg completion length</td><td>400 tokens</td><td>400 tokens</td></tr>
+      <tr><td>Sustained traffic</td><td>10 req/s</td><td>10 req/s</td></tr>
+      <tr><td>Per-replica throughput</td><td>n/a</td><td>30 req/s</td></tr>
+      <tr><td>Monthly tokens (in / out)</td><td>51.8B in · 10.4B out</td><td>same workload</td></tr>
+      <tr><td>GPUs needed</td><td>n/a</td><td>1 primary + 1 standby</td></tr>
+      <tr style="font-weight:600; background:#E8EFFB;"><td>Estimated monthly cost</td><td>≈ $41,500</td><td>≈ $5,000</td></tr>
+    </tbody>
+  </table>
+
+  <p>The arithmetic: 10 req/s × 86,400 s/day × 30 days ≈ 25.9 M requests/month. At 2,000 input tokens that is ≈ 51.8 B input tokens/month, costing 51,840 × $0.50 = $25,920. At 400 output tokens that is ≈ 10.4 B output tokens, costing 10,368 × $1.50 = $15,552. Hosted total ≈ $41,500. Self-hosted: two GPUs × $3.50/hour × 720 hours/month ≈ $5,040. The self-hosted option looks dramatically cheaper, but the comparison is honest only if the 8B open-weights model meets quality on this task. If it does not, the hosted bill is buying you capability you cannot replicate, and the right move is often a hybrid: route the easy traffic to the cheap path, escalate the rest.</p>
+
+  <p>The break-even traffic level where the two options cross is sensitive to one parameter more than any other: <em>per-replica throughput</em>. Continuous batching with appropriate <em>max_num_seqs</em> settings can lift the same hardware from 10 req/s to 50 req/s on the same prompt shape. Profile before purchasing reserved capacity.</p>
+
+  <h2>The cost-latency frontier</h2>
+  <p>Different serving choices occupy different points on a cost-latency Pareto curve. Naming the shape of the curve is more useful than memorizing absolute numbers, which move with every quarterly price update.</p>
+
+  <figure>
+    <svg viewBox="0 0 540 340" width="500" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Cost vs latency Pareto sketch for serving choices">
+      <defs>
+        <style>
+          .axis { stroke: #4A5568; stroke-width: 1.4; }
+          .axis-tick { stroke: #4A5568; stroke-width: 1; }
+          .axis-label { font-family: Inter, sans-serif; font-size: 12px; fill: #4A5568; font-weight: 500; }
+          .axis-title { font-family: Inter, sans-serif; font-size: 13px; fill: #0F2A4A; font-weight: 600; }
+          .point-label { font-family: Inter, sans-serif; font-size: 12px; fill: #0F2A4A; font-weight: 500; }
+          .pareto { stroke: #1F6FEB; stroke-width: 1.6; stroke-dasharray: 5 4; fill: none; }
+          .pareto-label { font-family: Inter, sans-serif; font-size: 11px; fill: #1F6FEB; font-style: italic; font-weight: 500; }
+        </style>
+      </defs>
+
+      <!-- Axes -->
+      <line class="axis" x1="70" y1="40"  x2="70"  y2="290"/>
+      <line class="axis" x1="70" y1="290" x2="490" y2="290"/>
+
+      <!-- Y axis ticks/labels (cost per request, low at bottom, high at top) -->
+      <g class="axis-tick">
+        <line x1="66" y1="60"  x2="70" y2="60"/>
+        <line x1="66" y1="120" x2="70" y2="120"/>
+        <line x1="66" y1="180" x2="70" y2="180"/>
+        <line x1="66" y1="240" x2="70" y2="240"/>
+      </g>
+      <text x="62" y="64"  text-anchor="end" class="axis-label">high</text>
+      <text x="62" y="184" text-anchor="end" class="axis-label">mid</text>
+      <text x="62" y="244" text-anchor="end" class="axis-label">low</text>
+
+      <!-- X axis ticks/labels -->
+      <g class="axis-tick">
+        <line x1="160" y1="290" x2="160" y2="294"/>
+        <line x1="270" y1="290" x2="270" y2="294"/>
+        <line x1="380" y1="290" x2="380" y2="294"/>
+      </g>
+      <text x="160" y="306" text-anchor="middle" class="axis-label">&lt; 100 ms</text>
+      <text x="270" y="306" text-anchor="middle" class="axis-label">~ 1 s</text>
+      <text x="380" y="306" text-anchor="middle" class="axis-label">~ 10 s</text>
+      <text x="455" y="306" text-anchor="middle" class="axis-label">batch</text>
+
+      <!-- Axis titles -->
+      <text x="280" y="328" text-anchor="middle" class="axis-title">Latency (response time)</text>
+      <text x="20" y="165" text-anchor="middle" class="axis-title" transform="rotate(-90 20 165)">Cost per request</text>
+
+      <!-- Pareto curve through non-dominated points -->
+      <path class="pareto" d="M 160,90 Q 240,140 320,200 Q 400,250 460,265"/>
+      <text x="380" y="155" class="pareto-label">Pareto frontier</text>
+
+      <!-- Points -->
+      <!-- Frontier hosted: low latency, high cost -->
+      <g><circle cx="200" cy="90" r="6" fill="#1F6FEB"/>
+         <text x="210" y="86" class="point-label">Frontier hosted API</text></g>
+
+      <!-- Mid-tier hosted -->
+      <g><circle cx="270" cy="160" r="6" fill="#1F6FEB"/>
+         <text x="280" y="156" class="point-label">Mid-tier hosted API</text></g>
+
+      <!-- Self-hosted 8B -->
+      <g><circle cx="240" cy="225" r="6" fill="#1F8B4C"/>
+         <text x="160" y="244" class="point-label">Self-host 8B (vLLM)</text></g>
+
+      <!-- Edge SLM -->
+      <g><circle cx="160" cy="225" r="6" fill="#1F8B4C"/>
+         <text x="80" y="220" class="point-label">Edge SLM (3B)</text></g>
+
+      <!-- Self-hosted 70B -->
+      <g><circle cx="320" cy="130" r="6" fill="#1F8B4C"/>
+         <text x="330" y="126" class="point-label">Self-host 70B</text></g>
+
+      <!-- Batched offline -->
+      <g><circle cx="455" cy="265" r="6" fill="#B45309"/>
+         <text x="395" y="282" class="point-label">Batched offline</text></g>
+
+      <!-- Dominated point example -->
+      <g><circle cx="350" cy="100" r="6" fill="#C53030" fill-opacity="0.6"/>
+         <text x="360" y="96" class="point-label" style="fill:#4A5568;">(dominated)</text></g>
+    </svg>
+    <figcaption><strong>Figure 12.2</strong> · Cost-versus-latency sketch for common serving choices. The dashed line marks the Pareto frontier; points above it are dominated — strictly worse on at least one axis without being better on the other. Real numbers move quarterly; the topology of the curve is stable.</figcaption>
+  </figure>
+
+  <p>Reading the figure: edge small-language-models and self-hosted 8B-class runtimes occupy the cheap end with low-to-moderate latency, frontier hosted APIs anchor the expensive low-latency corner, and asynchronous batched inference sits in the deep-cheap, slow-response corner. A given product feature often blends two: a fast cheap path for routine traffic and an escalation to a frontier model for the long tail. The gateway tier is where that policy lives; encoded as a routing rule, it can be tuned without redeploying the application.</p>
+
+  <div class="callout tip">
+    <div class="callout-head">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
+      Senior tip · Cache-hit economics often dominate the spreadsheet
+    </div>
+    <p>A 30 % prompt-cache hit rate on a workload with long shared system prompts can cut input-token cost by close to 30 % almost for free, because cached prefixes are billed at a fraction of full rate by most providers and at zero by self-hosted runtimes. Before re-architecting, instrument the prompt-hash cache rate end-to-end. Many "expensive workload" memos disappear after a stable system-prompt design and a small KV-cache front of the runtime.</p>
+  </div>
+
+  <p>A short routing rule that demonstrates the pattern — pick the cheapest model whose probability-of-success crosses a threshold, escalate otherwise:</p>
+
+  <pre data-lang="python"><code class="language-python">def choose_model(prompt: str, ctx: dict) -> str:
+    # Deterministic features the router is allowed to use
+    n_in = len(ctx["tokens_in"])
+    has_tools = bool(ctx.get("tool_calls"))
+    is_code = ctx.get("intent") == "code"
+
+    if is_code or has_tools or n_in > 8000:
+        return "frontier-hosted"     # complex paths
+    if n_in &lt; 1500 and ctx.get("tier") == "free":
+        return "edge-slm-3b"         # cheap path for short, low-tier
+    return "self-host-8b"            # default: cheap and good enough</code></pre>
+
+  <p>This design closes the loop: the gateway emits per-route success rates and costs to the observability sidecar (Figure 12.1); the routing thresholds are revised based on what the sidecar shows; the change is a config push, not a code release. The architecture is boring on purpose. It is the boring parts — clear tiers, statelessness, telemetry on every hop, a single place to change routing — that let teams iterate on prompts, models, and retrieval quality without stalling on infrastructure.</p>
+</section>
+
+
+<!-- ====================================================== -->
+<!-- Mermaid + MathJax bootstrap                             -->
+<!-- ====================================================== -->
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'base',
+    flowchart: { useMaxWidth: true, htmlLabels: true, curve: 'basis' },
+    themeVariables: {
+      fontFamily: 'Inter, "Segoe UI", system-ui, sans-serif',
+      fontSize: '15px',
+      primaryColor: '#F4F6FA',
+      primaryBorderColor: '#0F2A4A',
+      primaryTextColor: '#0F2A4A',
+      lineColor: '#4A5568',
+      secondaryColor: '#FFFFFF',
+      tertiaryColor: '#E5E9EF'
+    }
+  });
+</script>
+
+<script>
+  window.addEventListener('load', function() {
+    if (window.MathJax && MathJax.typesetPromise) {
+      MathJax.typesetPromise().catch(function(err) {
+        console.error('MathJax typesetting failed:', err);
+      });
+    }
+  });
+</script>
+
+</body>
+</html>

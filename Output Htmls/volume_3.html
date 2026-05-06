@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LLM Engineering — A Practitioner's Reference · Volume 3</title>
+
+<script>
+  window.MathJax = {
+    tex: {
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']],
+      processEscapes: true
+    },
+    svg: { fontCache: 'global' },
+    options: {
+      skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+  };
+</script>
+<script id="MathJax-script" async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+
+<style>
+/* ------------------ Page setup ------------------ */
+@page {
+  size: A4;
+  margin: 20mm 18mm 22mm 18mm;
+  @top-left {
+    content: string(partname);
+    font-family: Inter, "Segoe UI", system-ui, sans-serif;
+    font-size: 9pt;
+    color: #4A5568;
+  }
+  @top-right {
+    content: "LLM Engineering — A Practitioner's Reference · Volume 3";
+    font-family: Inter, "Segoe UI", system-ui, sans-serif;
+    font-size: 9pt;
+    color: #4A5568;
+  }
+  @bottom-left {
+    content: "Volume 3 of 5";
+    font-family: Inter, "Segoe UI", system-ui, sans-serif;
+    font-size: 9pt;
+    color: #4A5568;
+  }
+  @bottom-center {
+    content: counter(page) " / " counter(pages);
+    font-family: Inter, "Segoe UI", system-ui, sans-serif;
+    font-size: 9pt;
+    color: #4A5568;
+  }
+}
+
+@page cover {
+  margin: 20mm 18mm 22mm 18mm;
+  @top-left { content: ""; }
+  @top-right { content: ""; }
+  @bottom-left { content: ""; }
+  @bottom-center { content: ""; }
+}
+.cover-page { page: cover; }
+.toc-page { page: cover; }
+
+html { hyphens: auto; -webkit-hyphens: auto; }
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  font-family: Inter, "Segoe UI", system-ui, -apple-system, sans-serif;
+  font-size: 12pt;
+  line-height: 1.55;
+  color: #1A1A1A;
+  background: #FFFFFF;
+  text-align: left;
+  margin: 0;
+  padding: 0;
+}
+
+p { margin: 0 0 8pt 0; }
+
+/* ------------------ Headings ------------------ */
+h1 {
+  font-size: 32pt;
+  font-weight: 700;
+  color: #0F2A4A;
+  line-height: 1.15;
+  text-wrap: balance;
+  margin: 0 0 8pt 0;
+  string-set: partname content();
+}
+
+h2 {
+  font-size: 20pt;
+  font-weight: 600;
+  color: #0F2A4A;
+  margin: 24pt 0 8pt 0;
+  border-bottom: 1px solid #E5E9EF;
+  padding-bottom: 6pt;
+  line-height: 1.25;
+}
+
+h3 {
+  font-size: 14pt;
+  font-weight: 600;
+  color: #1F6FEB;
+  margin: 18pt 0 4pt 0;
+  line-height: 1.3;
+}
+
+h4 {
+  font-size: 12pt;
+  font-weight: 600;
+  color: #0F2A4A;
+  margin: 12pt 0 4pt 0;
+}
+
+/* ------------------ Code ------------------ */
+pre {
+  font-family: "JetBrains Mono", "Fira Code", Consolas, monospace;
+  font-size: 11pt;
+  background: #F4F6FA;
+  padding: 12px;
+  border-radius: 6px;
+  margin: 10pt 0 12pt 0;
+  position: relative;
+  overflow: hidden;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  line-height: 1.4;
+}
+
+pre[data-lang]::before {
+  content: attr(data-lang);
+  position: absolute;
+  top: 6px;
+  right: 12px;
+  font-size: 9pt;
+  letter-spacing: 0.08em;
+  color: #4A5568;
+  text-transform: uppercase;
+  font-family: Inter, "Segoe UI", system-ui, sans-serif;
+}
+
+code {
+  font-family: "JetBrains Mono", "Fira Code", Consolas, monospace;
+  font-size: 11pt;
+  background: #F4F6FA;
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+
+pre code {
+  background: transparent;
+  padding: 0;
+  font-size: 11pt;
+  display: block;
+  color: #1A1A1A;
+}
+
+/* Minimal Prism-like token coloring */
+.token.comment, .token.prolog, .token.doctype, .token.cdata { color: #6A7280; font-style: italic; }
+.token.punctuation { color: #4A5568; }
+.token.string, .token.attr-value, .token.regex { color: #1F8B4C; }
+.token.keyword, .token.builtin, .token.boolean, .token.atrule, .token.tag { color: #1F6FEB; font-weight: 600; }
+.token.function, .token.class-name { color: #B45309; }
+.token.number, .token.constant { color: #B45309; }
+.token.operator { color: #4A5568; }
+.token.decorator { color: #1F6FEB; }
+
+.code-caption {
+  font-size: 10.5pt;
+  color: #4A5568;
+  font-style: italic;
+  margin: 8pt 0 4pt 0;
+}
+
+/* ------------------ Figures ------------------ */
+figure {
+  margin: 12pt 0 16pt 0;
+  text-align: center;
+}
+
+figcaption {
+  font-size: 10.5pt;
+  color: #4A5568;
+  font-style: italic;
+  margin-top: 6pt;
+}
+
+.mermaid {
+  background: #FFFFFF;
+  margin: 0 auto;
+  text-align: center;
+}
+
+/* ------------------ Tables ------------------ */
+.table-caption {
+  font-size: 10.5pt;
+  color: #4A5568;
+  margin: 8pt 0 4pt 0;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 4pt 0 14pt 0;
+  font-size: 11pt;
+}
+
+thead { background: #0F2A4A; color: #FFFFFF; }
+
+th, td {
+  padding: 8px 12px;
+  text-align: left;
+  border: none;
+}
+
+th { font-weight: 600; font-size: 10.5pt; }
+tbody tr:nth-child(even) { background: #F4F6FA; }
+tbody tr:nth-child(odd) { background: #FFFFFF; }
+
+/* ------------------ Callouts ------------------ */
+.callout {
+  background: #F4F6FA;
+  border-left: 4px solid #1F6FEB;
+  padding: 10pt 14pt 10pt 14pt;
+  margin: 10pt 0 14pt 0;
+  border-radius: 0 4px 4px 0;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.callout .icon {
+  flex: 0 0 18px;
+  margin-top: 2px;
+}
+
+.callout .body { flex: 1; }
+
+.callout p { margin: 0 0 4pt 0; }
+.callout p:last-child { margin-bottom: 0; }
+
+.callout-title {
+  font-weight: 600;
+  font-size: 10.5pt;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #0F2A4A;
+  display: block;
+  margin-bottom: 4pt;
+}
+
+.callout.key { border-left-color: #1F6FEB; }
+.callout.key .callout-title { color: #1F6FEB; }
+.callout.pitfall { border-left-color: #B45309; background: #FBF3E7; }
+.callout.pitfall .callout-title { color: #B45309; }
+.callout.tip { border-left-color: #1F8B4C; background: #EEF7F0; }
+.callout.tip .callout-title { color: #1F8B4C; }
+
+/* Display math wrapper */
+.math-display {
+  margin: 8pt 0 12pt 0;
+  text-align: center;
+}
+
+/* ------------------ Cover page ------------------ */
+.cover-page {
+  height: 257mm; /* approx printable area */
+  padding-top: 75mm;
+  position: relative;
+}
+
+.cover-rule {
+  width: 40%;
+  height: 2px;
+  background: #0F2A4A;
+  margin-bottom: 18pt;
+}
+
+.cover-title {
+  font-size: 44pt;
+  font-weight: 700;
+  color: #0F2A4A;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  margin: 0 0 14pt 0;
+  text-wrap: balance;
+}
+
+.cover-subtitle {
+  font-size: 16pt;
+  font-weight: 400;
+  color: #4A5568;
+  font-style: italic;
+  margin: 0;
+}
+
+.cover-decoration {
+  position: absolute;
+  bottom: 32mm;
+  left: 0;
+  right: 0;
+  text-align: center;
+}
+
+.cover-date {
+  position: absolute;
+  bottom: 8mm;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 11pt;
+  color: #4A5568;
+  letter-spacing: 0.06em;
+}
+
+/* ------------------ TOC ------------------ */
+.toc-page {
+  padding-top: 8mm;
+}
+
+.toc-title {
+  font-size: 28pt;
+  font-weight: 700;
+  color: #0F2A4A;
+  margin: 0 0 18pt 0;
+}
+
+.toc-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 24pt 0;
+}
+
+.toc-list li {
+  display: flex;
+  align-items: baseline;
+  font-size: 13pt;
+  margin: 8pt 0;
+  border-bottom: 1px dotted #C8CFD8;
+  padding-bottom: 4pt;
+}
+
+.toc-num {
+  font-weight: 600;
+  color: #1F6FEB;
+  flex: 0 0 80px;
+}
+
+.toc-name { flex: 1; color: #1A1A1A; }
+
+.toc-page-num { color: #4A5568; font-variant-numeric: tabular-nums; }
+
+.companion-note {
+  margin-top: 28pt;
+  padding: 14pt 16pt;
+  background: #F4F6FA;
+  border-left: 3px solid #1F6FEB;
+  border-radius: 0 4px 4px 0;
+}
+
+.companion-note h4 {
+  margin: 0 0 8pt 0;
+  font-size: 11pt;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #1F6FEB;
+}
+
+.companion-note ul {
+  margin: 0;
+  padding-left: 20px;
+  font-size: 11pt;
+  color: #1A1A1A;
+}
+
+.companion-note li { margin: 3pt 0; }
+
+/* ------------------ Part section banner ------------------ */
+.part {
+  break-before: page;
+  page-break-before: always;
+}
+
+.part-banner {
+  background: #F4F6FA;
+  border-left: 3px solid #1F6FEB;
+  padding: 16px 20px;
+  margin-bottom: 16pt;
+}
+
+.part-eyebrow {
+  font-size: 11pt;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: #1F6FEB;
+  text-transform: uppercase;
+  margin: 0 0 6pt 0;
+}
+
+.part-banner h1 { margin: 0 0 8pt 0; }
+
+.part-deck {
+  font-size: 12.5pt;
+  font-style: italic;
+  color: #4A5568;
+  margin: 0;
+}
+
+/* ------------------ Lists ------------------ */
+ul, ol { margin: 4pt 0 10pt 0; padding-left: 22px; }
+li { margin: 2pt 0; }
+
+/* ------------------ Print rules ------------------ */
+@media print {
+  .part { break-before: page !important; page-break-before: always !important; }
+
+  figure {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    max-height: 200mm;
+    margin: 12pt 0 16pt 0;
+  }
+  figure .mermaid,
+  figure .mermaid > svg,
+  figure svg,
+  figure img {
+    max-width: 100% !important;
+    max-height: 180mm !important;
+    width: auto !important;
+    height: auto !important;
+    display: block;
+    margin: 0 auto;
+  }
+  figcaption {
+    break-before: avoid !important;
+    page-break-before: avoid !important;
+    margin-top: 6pt;
+  }
+
+  pre {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    max-height: 180mm;
+    overflow: hidden;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+
+  .callout, .math-display {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  table { break-inside: auto; }
+  thead { display: table-header-group; }
+  tfoot { display: table-footer-group; }
+  tr, td, th {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  h1, h2, h3, h4 {
+    break-after: avoid !important;
+    page-break-after: avoid !important;
+    text-wrap: balance;
+  }
+
+  .section-banner, .part-banner {
+    break-after: avoid !important;
+    page-break-after: avoid !important;
+  }
+
+  p, li, dd { widows: 2; orphans: 2; }
+
+  .no-print { display: none !important; }
+}
+
+/* On screen, give the cover page some breathing room */
+@media screen {
+  body { max-width: 210mm; margin: 0 auto; padding: 18mm; background: #ECEFF4; }
+  .cover-page, .toc-page, .part { background: #FFFFFF; padding: 18mm; margin-bottom: 18mm; box-shadow: 0 6px 18px rgba(15,42,74,0.08); border-radius: 4px; }
+  .cover-page { padding-top: 75mm; }
+}
+</style>
+</head>
+<body>
+
+<!-- =============================================================
+     COVER PAGE
+============================================================= -->
+<section class="cover-page">
+  <div class="cover-rule"></div>
+  <h1 class="cover-title">LLM Engineering — A Practitioner's Reference</h1>
+  <p class="cover-subtitle">Volume 3 · Production · Evaluation · Safety</p>
+
+  <div class="cover-decoration" aria-hidden="true">
+    <svg width="320" height="120" viewBox="0 0 320 120" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="gflow" x1="0" x2="1" y1="0" y2="0">
+          <stop offset="0%" stop-color="#1F6FEB" stop-opacity="0.0"/>
+          <stop offset="50%" stop-color="#1F6FEB" stop-opacity="0.85"/>
+          <stop offset="100%" stop-color="#0F2A4A" stop-opacity="0.0"/>
+        </linearGradient>
+      </defs>
+      <g fill="none" stroke="url(#gflow)" stroke-width="1.2">
+        <path d="M0,60 C60,20 100,100 160,60 C220,20 260,100 320,60"/>
+        <path d="M0,72 C60,32 100,112 160,72 C220,32 260,112 320,72"/>
+        <path d="M0,48 C60,8  100,88  160,48 C220,8  260,88  320,48"/>
+      </g>
+      <g fill="#0F2A4A">
+        <circle cx="40"  cy="60" r="2.5"/>
+        <circle cx="120" cy="60" r="2.5"/>
+        <circle cx="200" cy="60" r="2.5"/>
+        <circle cx="280" cy="60" r="2.5"/>
+      </g>
+      <g fill="#1F6FEB">
+        <circle cx="80"  cy="60" r="2"/>
+        <circle cx="160" cy="60" r="2"/>
+        <circle cx="240" cy="60" r="2"/>
+      </g>
+    </svg>
+  </div>
+
+  <p class="cover-date">2026 EDITION</p>
+</section>
+
+<!-- =============================================================
+     "How to save as PDF" callout (screen only)
+============================================================= -->
+<div class="no-print" style="margin: 0 0 20pt 0;">
+  <div class="callout key">
+    <div class="icon">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#1F6FEB" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r="0.6" fill="#1F6FEB"/></svg>
+    </div>
+    <div class="body">
+      <span class="callout-title">How to save this volume as a PDF</span>
+      <p>Open this file in <strong>Chrome</strong> or Edge. Wait until every diagram and equation has finished rendering on screen. Press <strong>Ctrl+P</strong> / <strong>⌘P</strong>. Set destination to <strong>"Save as PDF"</strong>. Under "More settings": <strong>Margins → Default</strong>, <strong>Paper size → A4</strong>, <strong>Scale → Default (100&nbsp;%)</strong>, and <strong>enable "Background graphics"</strong> so banners and callout fills render. Then click <strong>Save</strong>.</p>
+    </div>
+  </div>
+</div>
+
+<!-- =============================================================
+     TABLE OF CONTENTS
+============================================================= -->
+<section class="toc-page">
+  <h2 class="toc-title" style="border:none; padding:0;">Volume contents</h2>
+
+  <ul class="toc-list">
+    <li>
+      <span class="toc-num">Part 7</span>
+      <span class="toc-name">Production engineering for LLM apps</span>
+      <span class="toc-page-num">3</span>
+    </li>
+    <li>
+      <span class="toc-num">Part 8</span>
+      <span class="toc-name">Evaluation</span>
+      <span class="toc-page-num">10</span>
+    </li>
+    <li>
+      <span class="toc-num">Part 9</span>
+      <span class="toc-name">Safety, security, responsible AI</span>
+      <span class="toc-page-num">17</span>
+    </li>
+  </ul>
+
+  <div class="companion-note">
+    <h4>Companion volumes</h4>
+    <ul>
+      <li><strong>Volume 1</strong> · Parts 1–3 — Foundations · Modern Model Landscape · Adapting Models</li>
+      <li><strong>Volume 2</strong> · Parts 4–6 — Retrieval-Augmented Generation · Agentic Systems · Inference Optimization &amp; Serving</li>
+      <li><strong>Volume 4</strong> · Parts 10–12 — MLOps &amp; LLMOps · Multimodal · System Design Playbook</li>
+      <li><strong>Volume 5</strong> · Parts 13–15 — Trends · Curated Resources · Glossary</li>
+    </ul>
+  </div>
+</section>
+
+<!-- =============================================================
+     PART 7
+============================================================= -->
+<section class="part" id="part7">
+  <div class="part-banner">
+    <p class="part-eyebrow">PART 7</p>
+    <h1>Production engineering for LLM apps</h1>
+    <p class="part-deck"><em>Turning a working prompt into a system that streams, caches, fails over, and survives traffic — without melting the bill or the latency budget.</em></p>
+  </div>
+
+  <h2>7.1 Streaming: SSE, WebSockets, and cancellation</h2>
+
+  <p>For chat-style applications, perceived latency is dominated by <em>time to first token</em>, not total generation time. Streaming the output as the model produces it converts a multi-second wait into an interactive experience. Two transports dominate.</p>
+
+  <p><strong>Server-Sent Events (SSE)</strong> is a simple, unidirectional, HTTP-based protocol. Each response is a long-lived <code>text/event-stream</code> in which the server emits <code>data: {...}\n\n</code> frames. Browsers expose it through <code>EventSource</code>; on the server side any framework that supports streaming responses works. SSE is the right default: it traverses load balancers and proxies cleanly, supports automatic reconnection with <code>Last-Event-ID</code>, and matches the half-duplex nature of token streaming. Both major commercial providers ship SSE for streaming chat completions.</p>
+
+  <p><strong>WebSockets</strong> are full-duplex and stateful. They are appropriate when the client also pushes data during generation — voice agents that stream microphone audio, multi-modal interactive sessions, or live collaborative documents — and when sub-100&nbsp;ms server-to-client signalling is needed. The cost is operational: WebSocket-friendly load balancing, per-connection memory, and reconnection logic.</p>
+
+  <h3>Backpressure and cancellation</h3>
+
+  <p>An LLM gateway sits between fast producers (the model) and slow consumers (the network plus the browser). Without backpressure, queues grow unbounded under load. In Python, <code>asyncio.Queue</code> with a <code>maxsize</code> applied between the upstream stream reader and the downstream sender forces the producer to <code>await</code> when the buffer is full. In Node, <code>Readable</code> streams handle this implicitly via the <code>highWaterMark</code> and <code>pause/resume</code> contract.</p>
+
+  <p>Cancellation is the dual problem. When a user closes the tab or hits stop, three things must happen quickly: the framework must observe the disconnect, propagate it to the upstream HTTP request, and stop the model. FastAPI exposes this via <code>request.is_disconnected()</code> or by catching <code>asyncio.CancelledError</code> inside the generator; <code>httpx</code> and <code>aiohttp</code> both abort the upstream socket when their async context exits. Browsers cancel <code>fetch</code> with an <code>AbortController</code>. The provider SDKs honour stream context-managers (Anthropic's <code>client.messages.stream</code>, OpenAI's streaming generator) so closing them server-side stops billing — confirm this on your provider, since stop tokens already incurred remain billed.</p>
+
+  <div class="callout pitfall">
+    <div class="icon">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#B45309" stroke-width="2"><path d="M12 2 L22 20 L2 20 Z"/><line x1="12" y1="9" x2="12" y2="14"/><circle cx="12" cy="17" r="0.6" fill="#B45309"/></svg>
+    </div>
+    <div class="body">
+      <span class="callout-title">Pitfall · The "ghost stream"</span>
+      <p>It is easy to write a streaming endpoint that <em>looks</em> like it cancels but actually keeps draining the provider response in a detached task. Always tie the upstream HTTP client lifetime to the response generator scope, and verify under load that cancelled requests stop incurring token usage on your provider dashboard.</p>
+    </div>
+  </div>
+
+  <h2>7.2 Caching: exact, semantic, and provider-side</h2>
+
+  <p>LLM calls are expensive in latency and money; the cheapest token is the one you do not generate. Three caching strategies compose well.</p>
+
+  <p><strong>Exact-match caching</strong> hashes the full request — model, system prompt, message list, sampling parameters — and stores the completion in Redis or similar. It is appropriate for deterministic prompts (low temperature, no randomness), repeated lookups, and idempotent transformations. The hit rate is typically modest in chat applications because user inputs vary, but high in classification, extraction, and tool-call workflows.</p>
+
+  <p><strong>Semantic caching</strong> embeds the user query (or the canonicalised prompt minus the system part) and looks up nearest neighbours in a vector store. If cosine similarity exceeds a threshold — often <code>≥ 0.95</code>, tuned on a labelled set — the cached completion is returned. This catches paraphrases ("what's the refund policy?" vs. "how do I get my money back?"). The risk is <em>false positives</em>: two queries with high embedding similarity that have <em>different correct answers</em> ("flight from Paris to London" vs. "flight from London to Paris"). Mitigations: aggressive thresholds, per-tenant or per-user namespacing, and always pairing the cache with a small online evaluator. GPTCache and the LangChain semantic-cache classes ship reasonable defaults; rolling your own with Redis Stack or a small embedding model is straightforward.</p>
+
+  <p><strong>Provider-side prompt caching</strong> is a major 2024–2025 development. Anthropic's Claude API supports explicit <code>cache_control</code> breakpoints with five-minute (and one-hour beta) TTLs; OpenAI applies automatic prefix caching to prompts above approximately 1,024 tokens at a discount on cached input tokens; Google Gemini exposes an explicit context-caching API for storing large pinned contexts. The economics are striking: for a long system prompt or large retrieved corpus that does not change between turns, cached prefix reads cost a fraction of fresh input tokens, and latency improves because the KV cache is preserved server-side. Structuring prompts as <code>[stable system | stable tools | stable retrieved context | volatile user turn]</code> maximises the cacheable prefix.</p>
+
+  <p class="table-caption">Table 7.1 · Cache layers, hit characteristics, and costs.</p>
+  <table>
+    <thead>
+      <tr><th>Layer</th><th>Hit basis</th><th>Storage</th><th>Typical wins</th><th>Main risk</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Exact-match</td><td>Hash of full request</td><td>Redis / KV</td><td>Repeated extraction, RAG with stable corpora</td><td>Stale answers if data changes</td></tr>
+      <tr><td>Semantic</td><td>Embedding similarity</td><td>Vector store</td><td>Paraphrases, FAQ-style traffic</td><td>False positives on similar-but-different intents</td></tr>
+      <tr><td>Provider prefix</td><td>Token prefix match server-side</td><td>Provider KV cache</td><td>Long stable system / tool definitions</td><td>Short TTL; only helps prefix, not body</td></tr>
+    </tbody>
+  </table>
+
+  <h2>7.3 Multi-provider routing and failover</h2>
+
+  <p>A single-provider deployment is a single point of failure, both technical (regional outages, rate limits) and commercial (price changes, deprecations). A routing layer abstracts the provider behind a uniform API and adds operational policies on top. Three open-source or hosted layers see common production use:</p>
+
+  <ul>
+    <li><strong>LiteLLM</strong> — a thin Python client and proxy that exposes an OpenAI-compatible API for 100+ providers, with built-in fallbacks, retries, cost tracking, and a key-management layer suitable for multi-tenant gateways.</li>
+    <li><strong>OpenRouter</strong> — a hosted aggregator: one API, one billing relationship, automatic failover across providers for the same model family.</li>
+    <li><strong>Portkey</strong> — an "AI gateway" focused on observability, virtual keys, guardrails, and routing rules; positioned closer to a control plane than a library.</li>
+  </ul>
+
+  <p>The two routing patterns that matter operationally are <em>failover routing</em> and <em>cost-aware routing</em>. Failover routes the next request to a secondary provider when the primary returns 5xx, 429, or exceeds a latency budget. Capability matching is essential: a tool-use prompt cannot transparently fail over to a model that does not support tool calls, and a JSON-mode call must fall back to a model with comparable structured-output guarantees. Cost-aware routing decides per request which model is "good enough" — small models for classification, summarisation, and routing; flagship models for synthesis and reasoning. Production deployments typically combine a small classifier (rules or a fine-tuned encoder) with a cost-vs-quality table; meta-routers such as RouteLLM and similar research-grade systems learn this routing policy directly from preference data.</p>
+
+  <h2>7.4 Structured outputs</h2>
+
+  <p>Most production LLM calls are not free-form chat: they extract entities, populate forms, choose tools, or emit machine-readable JSON. Three families of techniques exist to make this reliable.</p>
+
+  <p><strong>Native JSON modes.</strong> OpenAI's <code>response_format={"type": "json_schema", "json_schema": {...}, "strict": true}</code> guarantees outputs valid against a JSON Schema; Anthropic and Gemini achieve the same effect through <em>tool use</em>, defining a tool whose input schema matches the desired structure and forcing the call. Native modes are cheapest, fastest, and most accurate when the schema is supported.</p>
+
+  <p><strong>Constrained decoding.</strong> Libraries like <em>Outlines</em>, <em>lm-format-enforcer</em>, <em>guidance</em>, and the constrained-grammar features in <em>vLLM</em> mask the model's logits at each step so only tokens compatible with a regex, JSON Schema, or context-free grammar receive non-zero probability. This works for self-hosted models and provides hard guarantees, not soft hints. The cost is integration complexity and a small throughput penalty.</p>
+
+  <p><strong>Validate-and-retry wrappers.</strong> <em>Instructor</em> (Pydantic + OpenAI/Anthropic) and similar frameworks parse outputs into a typed model, and on a validation error, re-call the LLM with the parser's exception text appended. This is robust, works with any provider, and integrates cleanly with Pydantic v2; the failure mode is the occasional infinite retry loop, so a hard cap (typically 2–3 attempts) and a fallback to a cheaper "extract again" prompt are non-negotiable.</p>
+
+  <h2>7.5 Reliability: retries, idempotency, circuit breakers</h2>
+
+  <p>LLM endpoints exhibit the failure modes of any high-traffic HTTP service plus a few of their own: token-budget rate limits (TPM/RPM), capacity throttling under demand spikes, and long-tail latencies that exceed normal HTTP timeouts. The reliability toolkit is the standard one, with one specifically-LLM twist.</p>
+
+  <p><strong>Exponential back-off with jitter.</strong> Naive exponential back-off — <code>sleep = base · 2^attempt</code> — synchronises failed clients, which retry in lockstep and worsen the outage. Adding jitter breaks the synchronisation. The "full jitter" recipe — <code>sleep ~ Uniform(0, base · 2^attempt)</code> — is a well-studied default. Formally:</p>
+
+  <div style="break-inside: avoid; page-break-inside: avoid;">
+    <p>For attempt \(k \in \{0, 1, 2, \dots\}\), the delay is</p>
+    <div class="math-display">
+      $$\Delta_k \sim \mathrm{Uniform}\!\left(0,\; \min(c,\; b \cdot 2^{k})\right)$$
+    </div>
+    <p>where \(b\) is the base delay (e.g. 250&nbsp;ms) and \(c\) is a hard cap (e.g. 30&nbsp;s) to keep the worst-case wait bounded. Always honour <code>Retry-After</code> when the server sets it; it overrides your jitter schedule.</p>
+  </div>
+
+  <p><strong>Idempotency.</strong> Both Anthropic and OpenAI accept an <code>Idempotency-Key</code> header on POST requests; the server deduplicates by key for a window of minutes to hours. The client generates a UUID once per logical request and reuses it across retries. Without this, a retry after a server-side success but before the response reaches the client double-bills and double-acts (especially dangerous for tool-using agents that perform side effects).</p>
+
+  <p><strong>Circuit breakers.</strong> When the downstream provider is degraded, hammering it with retries is counterproductive. A circuit breaker counts failures in a sliding window; once a threshold is exceeded, it <em>opens</em> and short-circuits subsequent calls (returning a cached response, a graceful fallback, or a friendly error) for a cool-down. After the cool-down, a single <em>half-open</em> probe tests recovery. The pattern composes cleanly with multi-provider routing: when the primary breaker opens, traffic shifts to secondary.</p>
+
+  <p><strong>Rate-limit handling.</strong> Provider rate limits are token-based (TPM) and request-based (RPM). Client-side, a token-bucket limiter aware of <em>both</em> dimensions prevents 429s from leaving your process. Server-side, a global queue with per-tenant fairness keeps a noisy neighbour from starving others.</p>
+
+  <h2>7.6 Token budgeting</h2>
+
+  <p>Even with million-token context windows, naïve "append every turn" strategies degrade quality, latency, and cost. Three techniques manage the budget:</p>
+
+  <ul>
+    <li><strong>Conversation windowing</strong> keeps the last \(K\) messages or last \(N\) tokens, with the system prompt sticky.</li>
+    <li><strong>Summarisation compression</strong> rolls older history into a running summary once the window crosses a threshold; the summary becomes the first user-visible memory entry.</li>
+    <li><strong>Sliding-window with anchors</strong> keeps the system prompt, the most recent \(K\) turns, and explicitly anchored memories (pinned facts, retrieved entities) — discarding the unstructured middle.</li>
+  </ul>
+
+  <p>A practical observation: <em>effective</em> context is shorter than advertised. Needle-in-a-haystack benchmarks show meaningful degradation past the middle of long contexts for many models, and reasoning quality drops well before the hard limit. Prompt compression libraries such as <em>LLMLingua</em> and <em>LongLLMLingua</em> apply learned compression to non-essential prompt regions and report 5×–20× compression with modest quality loss; useful when latency or cost is the binding constraint.</p>
+
+  <figure>
+    <div class="mermaid">
+sequenceDiagram
+  autonumber
+  participant C as Client
+  participant G as Gateway
+  participant K as Cache
+  participant P as Provider
+  C->>G: POST /chat (stream=true)
+  G->>K: lookup hash
+  alt cache hit
+    K-->>G: stored completion
+    G-->>C: replay as SSE
+  else miss
+    G->>P: forward (cache_control)
+    P-->>G: SSE chunks
+    G-->>C: forward chunks
+    P-->>G: usage + done
+    G->>K: store async
+    G-->>C: [DONE]
+  end
+    </div>
+    <figcaption>Figure 7.1 · Streaming + caching request lifecycle through an LLM gateway.</figcaption>
+  </figure>
+
+  <p class="code-caption">Streamed FastAPI proxy with full-jitter retry on transient errors.</p>
+  <pre data-lang="python"><code class="language-python">import asyncio, random, httpx
+from fastapi import FastAPI, Request
+from fastapi.responses import StreamingResponse
+
+app, LLM_URL, AUTH = FastAPI(), "https://api.provider.example/v1/chat", {"Authorization": "Bearer ..."}
+
+async def stream_with_retry(payload, max_retries=4, base=0.25, cap=8.0):
+    for attempt in range(max_retries):
+        try:
+            async with httpx.AsyncClient(timeout=60) as client:
+                async with client.stream("POST", LLM_URL, json=payload, headers=AUTH) as r:
+                    r.raise_for_status()
+                    async for chunk in r.aiter_bytes():
+                        yield chunk
+            return
+        except (httpx.HTTPStatusError, httpx.TransportError):
+            if attempt == max_retries - 1: raise
+            await asyncio.sleep(random.uniform(0, min(cap, base * 2 ** attempt)))
+
+@app.post("/chat")
+async def chat(req: Request):
+    body = await req.json()
+    return StreamingResponse(stream_with_retry(body), media_type="text/event-stream")</code></pre>
+
+  <div class="callout tip">
+    <div class="icon">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#1F8B4C" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9 12 L11 14 L15 10"/></svg>
+    </div>
+    <div class="body">
+      <span class="callout-title">Senior tip · Where to put each defence</span>
+      <p>Idempotency keys belong on the outermost retry boundary. Caches belong inside the gateway, before retry logic. Circuit breakers wrap each provider, not the gateway. Token-bucket limiters live at the edge of <em>your</em> service, not your provider's. Mixing these up is the most common cause of mysterious "we keep paying but the user sees errors" incidents.</p>
+    </div>
+  </div>
+</section>
+
+<!-- =============================================================
+     PART 8 — EVALUATION
+============================================================= -->
+<section class="part" id="part8">
+  <div class="part-banner">
+    <p class="part-eyebrow">PART 8</p>
+    <h1>Evaluation</h1>
+    <p class="part-deck"><em>Benchmarks tell you about a model, evaluations tell you about a system — and the gap between the two is where most production failures live.</em></p>
+  </div>
+
+  <h2>8.1 Standard benchmarks: what they actually measure</h2>
+
+  <p>Public benchmarks anchor model comparisons but rarely predict task-specific quality. A working knowledge of what each one tests — and where it fails — is needed to read provider claims critically.</p>
+
+  <p class="table-caption">Table 8.1 · Common 2025-era LLM benchmarks and their stated focus.</p>
+  <table>
+    <thead>
+      <tr><th>Benchmark</th><th>Format</th><th>What it claims to measure</th><th>Watch for</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>MMLU</td><td>57-subject MCQ</td><td>Broad academic knowledge</td><td>Saturation; contamination</td></tr>
+      <tr><td>MMLU-Pro</td><td>10-option MCQ, harder</td><td>Reasoning beyond memorisation</td><td>Less saturated, still public</td></tr>
+      <tr><td>BBH</td><td>23 BIG-Bench tasks</td><td>Hard reasoning subset</td><td>Heterogeneous; some tasks gameable</td></tr>
+      <tr><td>GPQA</td><td>PhD-written science MCQ</td><td>Expert-level reasoning</td><td>Small set; high variance</td></tr>
+      <tr><td>HumanEval / MBPP</td><td>Function-completion Python</td><td>Code generation</td><td>Easy by 2025 standards</td></tr>
+      <tr><td>MATH</td><td>Competition math</td><td>Symbolic reasoning</td><td>Heavily contaminated</td></tr>
+      <tr><td>IFEval</td><td>Verifiable instructions</td><td>Instruction-following</td><td>Narrow constraint vocabulary</td></tr>
+      <tr><td>LiveBench / LiveCodeBench</td><td>Rotating fresh tasks</td><td>Contamination-resistant ability</td><td>Newest items still evolve</td></tr>
+    </tbody>
+  </table>
+
+  <p><strong>Contamination.</strong> Most public benchmarks have been ingested into pre-training corpora, sometimes inadvertently. Headline scores on heavily-contaminated sets thus over-state real ability, especially for older datasets. Contamination-resistant benchmarks (LiveBench, LiveCodeBench, freshly written QA suites) periodically rotate items to mitigate this; pair them with public sets and report both.</p>
+
+  <h2>8.2 Human preference at scale</h2>
+
+  <p>Chatbot Arena is the most cited human-preference signal: anonymous pairwise votes between two models on user-supplied prompts, aggregated with Bradley–Terry / Elo into a leaderboard. It correlates broadly with what feels good to use, captures aspects (tone, formatting, conciseness) that benchmarks miss, and is hard to game in the short term.</p>
+
+  <p>It is also limited. Arena votes skew toward casual prompts, reward verbose and well-formatted answers, and rarely measure factual correctness directly. The "style-controlled" leaderboards published by the same group attempt to control for length and Markdown formatting, with noticeable effects on rankings. Treat preference scores as one signal — alongside benchmarks and your own task-specific evals — not as the ground truth.</p>
+
+  <h2>8.3 Designing task-specific evaluations</h2>
+
+  <p>The single highest-leverage engineering investment in an LLM application is a small, well-curated, task-specific evaluation suite. A good suite has four properties.</p>
+
+  <h3>Golden sets</h3>
+
+  <p>A hand-curated collection of 50–500 input/output pairs anchored in real or carefully synthesised user behaviour. Curate diversity along the axes that matter — input length, language, user intent, edge cases, adversarial inputs — not by uniform random sampling from logs. Each example carries an oracle answer or, for open-ended tasks, an oracle <em>specification</em> against which a judge can score outputs.</p>
+
+  <h3>Regression suites and slices</h3>
+
+  <p>The golden set runs on every release, every prompt change, every model swap. Sliced metrics — mean accuracy on long-input examples, on Spanish prompts, on examples flagged as hard, on each user segment — surface regressions that aggregate scores hide. A 1&nbsp;% overall improvement that masks a 10&nbsp;% drop on a critical slice is a regression.</p>
+
+  <h3>Statistical significance and power</h3>
+
+  <p>With \(N\) examples and observed accuracies \(p_1, p_2\) on systems A and B evaluated on the same prompts, the paired McNemar test or paired bootstrap is the right framing — not a two-proportion z-test, which assumes independence. To detect a minimum effect \(\delta\) at significance \(\alpha\) and power \(1-\beta\), required sample size scales roughly as</p>
+
+  <div style="break-inside: avoid; page-break-inside: avoid;">
+    <div class="math-display">
+      $$N \approx \frac{(z_{1-\alpha/2} + z_{1-\beta})^2 \, \sigma^2}{\delta^2}$$
+    </div>
+    <p>where \(\sigma^2\) is the variance of the per-example score difference. In practice, golden sets of 100–300 give credible signals on shifts of a few percentage points; smaller sets are still useful for direction-of-change but not for confidence intervals.</p>
+  </div>
+
+  <h2>8.4 Synthetic evaluation generation</h2>
+
+  <p>Hand-curating eval data is expensive, so practitioners generate it with strong LLMs: prompts, oracle answers, and adversarial variants alike. Self-Instruct, Evol-Instruct, and similar pipelines automate this. The technique is genuinely useful — it expands coverage to long-tail intents quickly — but introduces a circularity: the model that generates the eval is often correlated with the model under test, and a strong-model judge that scores outputs may share blind spots with both.</p>
+
+  <p>Mitigations: use a generator from a different model family than the system under test; spot-check a stratified sample by hand; pair every synthetic split with a human-curated split; and never use synthetic eval as the sole signal for go/no-go decisions.</p>
+
+  <h2>8.5 LLM-as-judge</h2>
+
+  <p>Hand-grading hundreds of open-ended outputs per release does not scale. Using an LLM as a judge — given the input, the output, and a rubric or reference, return a score or a winner — does. Common patterns:</p>
+
+  <ul>
+    <li><strong>Pairwise.</strong> Show two outputs; the judge picks A, B, or tie. The simplest and best-calibrated form.</li>
+    <li><strong>Single-grade.</strong> Show one output; the judge scores it on a rubric (1–5 or per-dimension).</li>
+    <li><strong>G-Eval.</strong> Use chain-of-thought plus a structured form-filling prompt to reduce variance and surface justifications.</li>
+    <li><strong>MT-Bench.</strong> A standard multi-turn benchmark with an LLM judge; widely used for chat-quality smoke tests.</li>
+  </ul>
+
+  <p>LLM judges have well-characterised biases. <strong>Position bias</strong>: they prefer the first option in pairwise comparisons; mitigate by running each pair twice with order swapped and averaging. <strong>Length bias</strong>: they prefer longer, more verbose answers; mitigate with length-controlled rubrics or by reporting length-adjusted scores. <strong>Self-preference bias</strong>: judges from a given model family rate outputs from that family more favourably; mitigate by judging with at least two distinct families and checking inter-judge agreement. <strong>Formatting bias</strong>: bullet-pointed and Markdown-heavy answers score higher even when content is equivalent.</p>
+
+  <figure>
+    <div class="mermaid">
+flowchart TB
+  R["LLM Evaluation"]
+  subgraph SO["Offline benchmarks"]
+    direction TB
+    O1["MMLU / GPQA"]
+    O2["HumanEval / MATH"]
+    O3["LiveBench"]
+  end
+  subgraph SN["Online evaluation"]
+    direction TB
+    N1["Shadow traffic"]
+    N2["A/B tests"]
+    N3["User feedback"]
+  end
+  subgraph SH["Human evaluation"]
+    direction TB
+    H1["Pairwise votes"]
+    H2["Rubric grading"]
+  end
+  subgraph SJ["LLM-as-judge"]
+    direction TB
+    J1["G-Eval"]
+    J2["MT-Bench"]
+    J3["Pairwise / single-grade"]
+  end
+  R --> SO
+  R --> SN
+  R --> SH
+  R --> SJ
+    </div>
+    <figcaption>Figure 8.1 · Evaluation taxonomy: four complementary families, used together.</figcaption>
+  </figure>
+
+  <h2>8.6 RAG evaluation</h2>
+
+  <p>Retrieval-augmented systems have a richer failure surface than plain generation: bad retrieval, good retrieval the model ignores, good retrieval the model misuses, hallucinated grounding. The standard four-metric decomposition separates retrieval quality from generation quality.</p>
+
+  <ul>
+    <li><strong>Faithfulness.</strong> Are the claims in the answer entailed by the retrieved context? Computed by extracting claims from the answer and verifying each against the context.</li>
+    <li><strong>Answer relevance.</strong> Does the answer address the question asked, regardless of whether it is grounded? Often computed by generating questions from the answer and measuring similarity to the original.</li>
+    <li><strong>Context precision.</strong> Among the retrieved chunks, are the relevant ones ranked high? Standard ranking metric.</li>
+    <li><strong>Context recall.</strong> Is all the information needed to answer present in the retrieved set? Requires a ground-truth answer.</li>
+  </ul>
+
+  <p>Three libraries dominate the open-source space: <em>RAGAs</em> (the canonical RAG-metrics toolkit), <em>TruLens</em> (instrumentation plus a "feedback functions" abstraction), and <em>Arize Phoenix</em> (tracing, evals, and a browser UI). All three integrate with common framework tracers (LangChain, LlamaIndex, OpenTelemetry) and can run in CI.</p>
+
+  <figure>
+    <div class="mermaid">
+flowchart TB
+  Q[Query] --> R[Retrieval]
+  R --> G[Generation]
+  G --> A[Answer]
+  R -.-> RP[Context precision]
+  R -.-> RR[Context recall]
+  G -.-> F[Faithfulness]
+  A -.-> AR[Answer relevance]
+  A -.-> AC[Answer correctness]
+    </div>
+    <figcaption>Figure 8.2 · RAG evaluation metric map: retrieval-side and generation-side metrics composed end-to-end.</figcaption>
+  </figure>
+
+  <p class="code-caption">Computing two RAGAs metrics on a small toy dataset.</p>
+  <pre data-lang="python"><code class="language-python">from datasets import Dataset
+from ragas import evaluate
+from ragas.metrics import faithfulness, answer_relevancy
+
+samples = {
+    "question":     ["Where is the European Central Bank headquartered?"],
+    "answer":       ["The ECB is headquartered in Frankfurt am Main."],
+    "contexts":     [["The European Central Bank is based in Frankfurt am Main, Germany,"
+                      " and supervises euro-area banks."]],
+    "ground_truth": ["Frankfurt am Main, Germany"],
+}
+dataset = Dataset.from_dict(samples)
+
+result = evaluate(dataset, metrics=[faithfulness, answer_relevancy])
+print(result.to_pandas()[["faithfulness", "answer_relevancy"]])</code></pre>
+
+  <h2>8.7 Agent evaluation</h2>
+
+  <p>Agent systems add a temporal dimension: success depends on a sequence of decisions, tool calls, and recoveries. Three layers of evaluation apply.</p>
+
+  <p><strong>Trajectory evaluation</strong> compares the actual tool-call sequence and intermediate states against a reference trajectory or a graded specification. Useful when the task has multiple acceptable solution paths but constrained ones.</p>
+
+  <p><strong>Tool-call accuracy</strong> grades each individual call: was the right tool selected, were the arguments well-formed and correct, was the result correctly interpreted? It catches schema-confusion bugs that end-to-end metrics hide.</p>
+
+  <p><strong>End-to-end success</strong> measures task completion against ground-truth outcomes. Public benchmarks include <em>SWE-bench</em> and <em>SWE-bench Verified</em> (real GitHub issues plus tests), <em>WebArena</em> and <em>VisualWebArena</em> (browsing tasks), and <em>OS-World</em> (computer-use). They are useful baselines but rarely match your domain; build a small in-domain end-to-end set as well.</p>
+
+  <h2>8.8 Online evaluation</h2>
+
+  <p>Offline scores predict, online metrics decide. The standard online instruments:</p>
+
+  <ul>
+    <li><strong>Shadow traffic.</strong> Mirror a slice of production requests to a challenger system without returning its response to users; compare offline. Cheap, safe, and the right first step.</li>
+    <li><strong>A/B tests with feature flags.</strong> Randomly assign users to control and treatment; track conversion, engagement, retention, and direct LLM-quality signals (regeneration rate, edit distance from response, thumbs).</li>
+    <li><strong>Win-rate and regret.</strong> For systems that can ship two outputs, present both (or interleave) and let preferences speak. Regret tracks the cumulative loss from suboptimal choices over time.</li>
+    <li><strong>User-feedback loops.</strong> Thumbs, free-text feedback, "regenerate" clicks, and edit telemetry compose into a noisy but high-volume quality signal. Pair with a sampled human-graded subset to anchor calibration.</li>
+  </ul>
+
+  <div class="callout pitfall">
+    <div class="icon">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#B45309" stroke-width="2"><path d="M12 2 L22 20 L2 20 Z"/><line x1="12" y1="9" x2="12" y2="14"/><circle cx="12" cy="17" r="0.6" fill="#B45309"/></svg>
+    </div>
+    <div class="body">
+      <span class="callout-title">Pitfall · Goodhart on user signals</span>
+      <p>Optimising directly to thumbs and engagement reliably produces longer, more confident, more sycophantic answers — not better ones. Treat online signals as a check on offline evaluation, not a substitute for it, and audit drift in answer length, hedging, and refusal rates over time.</p>
+    </div>
+  </div>
+</section>
+
+<!-- =============================================================
+     PART 9 — SAFETY, SECURITY, RESPONSIBLE AI
+============================================================= -->
+<section class="part" id="part9">
+  <div class="part-banner">
+    <p class="part-eyebrow">PART 9</p>
+    <h1>Safety, security, responsible AI</h1>
+    <p class="part-deck"><em>The model is a programmable component reachable by anyone whose data ever touches it — so the threat model has to expand to match.</em></p>
+  </div>
+
+  <h2>9.1 Threat model</h2>
+
+  <p>An LLM application surface differs from a traditional web service in one crucial respect: the same channel that carries user intent also carries instructions the model will execute. Any text reaching the prompt — directly typed, retrieved, scraped from a tool result, embedded in a PDF or image — is potentially adversarial.</p>
+
+  <p><strong>Direct prompt injection.</strong> The user types instructions intended to override the system prompt or extract secrets ("ignore previous instructions and …"). Effective for systems with weak system-prompt isolation, secret data in the system prompt, or under-constrained tools.</p>
+
+  <p><strong>Indirect prompt injection.</strong> An attacker plants instructions in content the model will later read — a webpage, an email, a calendar invite, a document in a corporate share, an image alt-text, a vector-store record. When the agent reads that content, it executes the injected instructions on the original user's behalf and authority. This is the most consequential class of LLM attack and the hardest to fully mitigate.</p>
+
+  <p><strong>Jailbreaks.</strong> Inputs that elicit content the model is policy-trained to refuse — multi-turn role play, encoded payloads, "Crescendo"-style gradual escalation, low-resource-language requests, persona attacks. Distinct from injection: jailbreaks subvert the model's policy; injection subverts the system's policy.</p>
+
+  <p><strong>Data exfiltration.</strong> The model emits sensitive data — system-prompt contents, retrieved documents, tool outputs, customer PII — into a channel the attacker controls. With tools, this includes constructing a URL with the secret in a query parameter and asking the agent to fetch it.</p>
+
+  <p><strong>Tool abuse and excessive agency.</strong> An agent calls destructive tools (delete, send-email, transfer-funds) it should not have, with arguments derived from attacker-controlled context. The root cause is almost always over-broad tool grants combined with insufficient authorisation checks at the tool layer.</p>
+
+  <p><strong>Model and supply-chain attacks.</strong> Compromised model weights, poisoned fine-tuning data, malicious adapters published on public hubs, typo-squatted package names. The mitigations are familiar from software supply-chain security: pin versions, verify checksums, prefer signed releases, and treat third-party adapters as untrusted code.</p>
+
+  <figure>
+    <div class="mermaid">
+flowchart TB
+  T["LLM threat surface"]
+  subgraph SI["Input-side"]
+    direction TB
+    I1["Direct injection"]
+    I2["Indirect injection"]
+    I3["Jailbreak"]
+  end
+  subgraph SO["Tool-side"]
+    direction TB
+    O1["Tool abuse"]
+    O2["Excessive agency"]
+    O3["Supply chain"]
+  end
+  subgraph SX["Output-side"]
+    direction TB
+    X1["Data exfiltration"]
+    X2["Insecure output handling"]
+    X3["Hallucinated actions"]
+  end
+  T --> SI
+  T --> SO
+  T --> SX
+    </div>
+    <figcaption>Figure 9.1 · LLM threat-model overview: input-, tool-, and output-side attack classes.</figcaption>
+  </figure>
+
+  <h2>9.2 Defences</h2>
+
+  <p>No single defence is sufficient. The mature posture is defence-in-depth across four layers.</p>
+
+  <p><strong>Input guardrails</strong> classify or rewrite incoming prompts before the model sees them. Open-source options include Meta's <em>Prompt Guard 2</em> (small classifier for jailbreak / injection detection), <em>Rebuff</em> (heuristics + canary-token approach), and the input-rail layer of NVIDIA's <em>NeMo Guardrails</em>. Commercial gateways (Portkey, Guardrails AI) bundle similar checks behind a single API.</p>
+
+  <p><strong>Structural defences</strong> reduce the blast radius even when injection succeeds. Treat retrieved content and tool outputs as <em>data, not instructions</em> by tagging them with delimiters the system prompt explicitly refuses to follow. Run untrusted content under a model with constrained tool scope ("planner / executor" or "dual-LLM" patterns). Authorise every tool call at the tool boundary against the original user identity, not the model's request — the model is acting as a confused deputy.</p>
+
+  <p><strong>Output guardrails</strong> classify or filter responses before they reach users or downstream systems. <em>Llama Guard 3</em> and successors are content-policy classifiers from Meta released for this purpose; <em>Guardrails AI</em> validates structured output (PII presence, schema, safe SQL); the output rails in <em>NeMo Guardrails</em> compose programmable post-checks. Enforce schema, citation, and topicality constraints at this layer rather than trusting the model to self-police.</p>
+
+  <p><strong>Tool sandboxing</strong> closes the last mile. Sensitive tools require human-in-the-loop confirmation; destructive operations are constrained to allow-listed targets; outbound HTTP fetches go through a egress proxy with denied internal addresses; secret values never enter the prompt at all (the tool reads them server-side from the user's vault).</p>
+
+  <h2>9.3 PII handling and content policy</h2>
+
+  <p>Logs and stored conversations are the most overlooked PII surface. Prompts often contain names, emails, addresses, account identifiers, and freely-typed health or financial details. Treat the log pipeline as a data-protection problem from day one: detect and redact at ingestion, not at query time.</p>
+
+  <p>Microsoft's open-source <em>Presidio</em> ships NER-based detectors and configurable redaction operators, including consistent <em>aliasing</em> — replacing identifiers with stable placeholders so referential structure survives ("PERSON_017 emailed PERSON_017 again") for analysis without exposing identity. Pair Presidio with format-preserving tokenisation for fields that downstream systems must round-trip. For training corpora, differentially-private fine-tuning (DP-SGD, opacus) provides quantitative guarantees but with measurable utility cost; reserve it for the most sensitive deployments.</p>
+
+  <h2>9.4 The OWASP LLM Top 10 (2025 edition)</h2>
+
+  <p>OWASP's 2025 update to its LLM-specific Top 10 reorganises and expands the list to reflect deployed-system failure modes. A condensed reference for engineers:</p>
+
+  <p class="table-caption">Table 9.1 · OWASP LLM Top 10 (2025) — engineering view.</p>
+  <table>
+    <thead>
+      <tr><th>ID</th><th>Risk</th><th>Primary control</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>LLM01</td><td>Prompt injection (direct &amp; indirect)</td><td>Input rails, content tagging, tool authorisation</td></tr>
+      <tr><td>LLM02</td><td>Sensitive information disclosure</td><td>Output rails, PII redaction, prompt minimisation</td></tr>
+      <tr><td>LLM03</td><td>Supply chain</td><td>Pin and verify weights, datasets, adapters</td></tr>
+      <tr><td>LLM04</td><td>Data &amp; model poisoning</td><td>Provenance, eval suites for backdoors, dataset cards</td></tr>
+      <tr><td>LLM05</td><td>Improper output handling</td><td>Treat output as untrusted; validate before exec / SQL</td></tr>
+      <tr><td>LLM06</td><td>Excessive agency</td><td>Least-privilege tools; confirmation on destructive actions</td></tr>
+      <tr><td>LLM07</td><td>System-prompt leakage</td><td>No secrets in system prompt; assume it is reachable</td></tr>
+      <tr><td>LLM08</td><td>Vector &amp; embedding weaknesses</td><td>Per-tenant indexes; auth on retrieve; integrity checks</td></tr>
+      <tr><td>LLM09</td><td>Misinformation / hallucinations</td><td>Citation enforcement; abstention; eval coverage</td></tr>
+      <tr><td>LLM10</td><td>Unbounded consumption</td><td>Quotas, budgets, depth limits, circuit breakers</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout key">
+    <div class="icon">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#1F6FEB" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9 12 L11 14 L15 9"/></svg>
+    </div>
+    <div class="body">
+      <span class="callout-title">Key idea · The system prompt is not a secret</span>
+      <p>Designs that depend on the system prompt remaining hidden fail under indirect prompt injection, model regurgitation, or a sufficiently determined user. Put policy in the system prompt; put secrets, credentials, and authorisation in the tools and retrieval layer.</p>
+    </div>
+  </div>
+
+  <h2>9.5 Bias, toxicity, and provenance</h2>
+
+  <p>Bias and toxicity evaluation suites — <em>BBQ</em>, <em>BOLD</em>, <em>ToxiGen</em>, <em>DiscrimEval</em>, <em>StereoSet</em> — measure disparate behaviour across demographic groups, refusal patterns, and toxic-completion rates. Useful in pre-launch evaluation; not a substitute for in-domain audits, since aggregate scores rarely surface failures specific to a particular product context.</p>
+
+  <p>Provenance and citation enforcement matter more than they used to. RAG systems can require every claim to map to a retrieved chunk, and refuse or abstain otherwise. Watermarking research (the Aaronson scheme, the Kirchenbauer green-list approach for text; Google's SynthID for image and increasingly for text) embeds detectable signals into outputs — useful for downstream provenance checks, with the caveat that paraphrase, translation, and short outputs degrade detection.</p>
+
+  <h2>9.6 Compliance touch-points</h2>
+
+  <p><strong>GDPR.</strong> Prompt and completion logs typically contain personal data, which makes the logging pipeline a processing activity in its own right. Establish a lawful basis (usually legitimate interest plus contractual necessity for service-improvement; consent for training on user data), publish retention periods, honour data-subject access and erasure requests against the log store, and respect regional data-residency where applicable. The right-to-erasure obligation extends to fine-tuning corpora derived from user data.</p>
+
+  <p><strong>HIPAA.</strong> US healthcare data (PHI) requires a Business Associate Agreement with any party that processes it. The major providers offer HIPAA-eligible deployments — OpenAI's enterprise tier, Microsoft Azure OpenAI, AWS Bedrock, Anthropic on supported clouds — but only under specific configurations (no training on data, no human review, regional endpoints). Verify the exact contractual surface before sending PHI.</p>
+
+  <p><strong>SOC 2 Type II.</strong> The standard third-party assurance for SaaS controls. Vendor SOC 2 reports cover their controls, not yours; a SOC 2 attestation from a model provider lets your auditors check the box on vendor management but says nothing about how your application uses the model. Map your own controls to your trust-services criteria separately.</p>
+
+  <h2>9.7 Governance artefacts</h2>
+
+  <p><strong>Model cards</strong> document a model's intended use, training data summary, evaluation results, known limitations, and demographic-disparity findings. <strong>System cards</strong> document the deployed application: prompts in use, tools and their permissions, eval results on the task, the safety stack, and known residual risks. <strong>Dataset cards</strong> document training and evaluation corpora — provenance, sampling methodology, known biases, licensing.</p>
+
+  <p>Two frameworks set the wider governance frame.</p>
+
+  <p><strong>NIST AI Risk Management Framework</strong> organises AI governance under four functions — <em>GOVERN</em>, <em>MAP</em>, <em>MEASURE</em>, <em>MANAGE</em> — and its companion <em>Generative AI Profile</em> tailors the framework to LLMs and similar systems. It is a voluntary framework but the canonical reference cited in US federal procurement and increasingly in vendor questionnaires.</p>
+
+  <p><strong>EU AI Act.</strong> Phased into force from 2025–2027, it imposes obligations on <em>general-purpose AI</em> providers (technical documentation, training-data summary, copyright policy, model evaluations; additional obligations for "systemic risk" models above a compute threshold) and on deployers of <em>high-risk</em> AI systems (risk management, data governance, logging, human oversight, post-market monitoring, conformity assessment, registration). Most engineer-facing applications are not themselves high-risk, downstream obligations cascade in regulated sectors — credit, education, public-sector decisions, biometric identification — where high-risk obligations apply. The Act treats this as engineering work — not a legal afterthought — and the documentation, logging, and evaluation practices in this volume are the same artefacts conformity assessment will require.</p>
+
+  <div class="callout tip">
+    <div class="icon">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#1F8B4C" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9 12 L11 14 L15 10"/></svg>
+    </div>
+    <div class="body">
+      <span class="callout-title">Senior tip · Build the artefacts as you build the system</span>
+      <p>Model cards, system cards, and risk registers written at launch are forensic documents at best. Maintained as living artefacts — updated each release alongside evals — they become the spine of incident response, regulatory audit, and onboarding for new engineers. The cost of writing them in tandem with the code is small; the cost of reconstructing them under deadline is enormous.</p>
+    </div>
+  </div>
+</section>
+
+<!-- =============================================================
+     RENDER GUARDS
+============================================================= -->
+<script>
+  if (window.mermaid && mermaid.initialize) {
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'base',
+      flowchart: { useMaxWidth: true, htmlLabels: true, curve: 'basis' },
+      sequence: { useMaxWidth: true },
+      themeVariables: {
+        fontFamily: 'Inter, "Segoe UI", system-ui, sans-serif',
+        fontSize: '15px',
+        primaryColor: '#F4F6FA',
+        primaryBorderColor: '#0F2A4A',
+        primaryTextColor: '#0F2A4A',
+        lineColor: '#4A5568',
+        secondaryColor: '#FFFFFF',
+        tertiaryColor: '#E5E9EF'
+      }
+    });
+  }
+</script>
+
+<script>
+  window.addEventListener('load', function() {
+    if (window.MathJax && MathJax.typesetPromise) {
+      MathJax.typesetPromise().catch(function(err) {
+        console.error('MathJax typesetting failed:', err);
+      });
+    }
+  });
+</script>
+
+</body>
+</html>

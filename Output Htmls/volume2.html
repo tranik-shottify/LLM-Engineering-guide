@@ -1,0 +1,1400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LLM Engineering — A Practitioner's Reference · Volume 2</title>
+
+<!-- MathJax config MUST come before loader -->
+<script>
+window.MathJax = {
+  tex: {
+    inlineMath: [['\\(', '\\)']],
+    displayMath: [['$$', '$$'], ['\\[', '\\]']],
+    processEscapes: true
+  },
+  svg: { fontCache: 'global' },
+  options: {
+    skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  }
+};
+</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+<!-- Prism.js for syntax highlighting -->
+<link href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+
+<!-- Mermaid -->
+<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+
+<style>
+@page { size: A4; margin: 20mm 18mm 22mm 18mm; }
+html { hyphens: auto; -webkit-hyphens: auto; }
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  font-family: Inter, "Segoe UI", system-ui, -apple-system, sans-serif;
+  font-size: 12pt;
+  line-height: 1.55;
+  color: #1A1A1A;
+  background: #FFFFFF;
+  text-align: left;
+  margin: 0;
+  padding: 0;
+}
+
+p { margin: 0 0 8pt 0; }
+
+h1, h2, h3, h4 { font-family: Inter, "Segoe UI", system-ui, sans-serif; }
+
+h1.part-title {
+  font-size: 32pt;
+  font-weight: 700;
+  color: #0F2A4A;
+  line-height: 1.15;
+  margin: 0 0 4pt 0;
+  text-wrap: balance;
+}
+
+h2 {
+  font-size: 20pt;
+  font-weight: 600;
+  color: #0F2A4A;
+  margin: 24pt 0 8pt 0;
+  border-bottom: 1px solid #E5E9EF;
+  padding-bottom: 6pt;
+}
+
+h3 {
+  font-size: 14pt;
+  font-weight: 600;
+  color: #1F6FEB;
+  margin: 18pt 0 4pt 0;
+}
+
+h4 {
+  font-size: 12pt;
+  font-weight: 600;
+  color: #0F2A4A;
+  margin: 12pt 0 4pt 0;
+}
+
+code, pre, .lang-label {
+  font-family: "JetBrains Mono", "Fira Code", Consolas, monospace;
+}
+
+code {
+  font-size: 11pt;
+  background: #F4F6FA;
+  padding: 0 2px;
+  border-radius: 4px;
+}
+
+pre {
+  position: relative;
+  font-size: 11pt;
+  line-height: 1.45;
+  background: #F4F6FA;
+  padding: 12px;
+  border-radius: 6px;
+  margin: 8pt 0 10pt 0;
+  overflow-x: auto;
+}
+
+pre code {
+  background: transparent;
+  padding: 0;
+  font-size: 11pt;
+}
+
+pre .lang-label {
+  position: absolute;
+  top: 6px;
+  right: 10px;
+  font-size: 9pt;
+  letter-spacing: 0.08em;
+  color: #4A5568;
+  text-transform: uppercase;
+}
+
+.snippet-caption {
+  font-size: 10.5pt;
+  color: #4A5568;
+  margin: 10pt 0 2pt 0;
+  font-style: italic;
+}
+
+figure {
+  margin: 12pt 0 16pt 0;
+  text-align: center;
+}
+
+figcaption {
+  font-size: 10.5pt;
+  color: #4A5568;
+  font-style: italic;
+  margin-top: 6pt;
+  text-align: center;
+}
+
+.mermaid {
+  text-align: center;
+  margin: 0 auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 6pt 0 14pt 0;
+  font-size: 11pt;
+}
+
+table caption {
+  caption-side: top;
+  text-align: left;
+  font-size: 10.5pt;
+  color: #4A5568;
+  font-style: italic;
+  padding-bottom: 4pt;
+}
+
+thead th {
+  background: #0F2A4A;
+  color: #FFFFFF;
+  font-weight: 600;
+  text-align: left;
+  padding: 8px 12px;
+  font-size: 11pt;
+}
+
+tbody td {
+  padding: 8px 12px;
+  border-top: 1px solid #E5E9EF;
+}
+
+tbody tr:nth-child(even) {
+  background: #FAFBFD;
+}
+
+.callout {
+  background: #F4F6FA;
+  border-left: 3px solid #1F6FEB;
+  padding: 10px 14px;
+  margin: 10pt 0 12pt 0;
+  border-radius: 0 4px 4px 0;
+}
+.callout.pitfall { border-left-color: #B45309; }
+.callout.tip { border-left-color: #1F8B4C; }
+
+.callout-title {
+  font-weight: 600;
+  color: #0F2A4A;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-right: 6px;
+}
+.callout.pitfall .callout-title { color: #B45309; }
+.callout.tip .callout-title { color: #1F8B4C; }
+
+.callout-icon {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  vertical-align: -2px;
+}
+
+.math-display {
+  text-align: center;
+  margin: 12pt 0;
+}
+
+.part {
+  break-before: page;
+  page-break-before: always;
+}
+
+.part-banner {
+  background: #F4F6FA;
+  color: #0F2A4A;
+  border-left: 3px solid #1F6FEB;
+  padding: 16px 18px;
+  margin: 0 0 14pt 0;
+}
+
+.part-label {
+  font-size: 11pt;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #1F6FEB;
+  font-weight: 600;
+  margin-bottom: 4pt;
+}
+
+.part-deck {
+  font-style: italic;
+  font-size: 12.5pt;
+  color: #4A5568;
+  margin-top: 6pt;
+  line-height: 1.4;
+}
+
+/* Volume opener page */
+.volume-opener {
+  height: 270mm;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding-top: 90mm;
+  page-break-after: always;
+  break-after: page;
+}
+
+.volume-opener .accent-rule {
+  width: 40%;
+  height: 2px;
+  background: #0F2A4A;
+  margin-bottom: 14pt;
+}
+
+.volume-opener .volume-title {
+  font-size: 44pt;
+  font-weight: 700;
+  color: #0F2A4A;
+  line-height: 1.1;
+  margin: 0 0 14pt 0;
+  text-wrap: balance;
+}
+
+.volume-opener .volume-subtitle {
+  font-size: 16pt;
+  font-weight: 400;
+  color: #4A5568;
+  margin: 0 0 0 0;
+}
+
+.volume-opener .opener-decoration {
+  margin: 30pt auto 0 0;
+  text-align: left;
+}
+
+.volume-opener .date-line {
+  font-size: 11pt;
+  color: #4A5568;
+  margin-top: auto;
+}
+
+/* Contents page */
+.contents-page {
+  break-after: page;
+  page-break-after: always;
+}
+
+.contents-page h1 {
+  font-size: 28pt;
+  font-weight: 700;
+  color: #0F2A4A;
+  margin: 0 0 18pt 0;
+}
+
+.toc-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 24pt 0;
+}
+
+.toc-list li {
+  display: flex;
+  align-items: baseline;
+  margin: 0 0 10pt 0;
+  font-size: 13pt;
+}
+
+.toc-list .toc-label {
+  font-size: 10pt;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #1F6FEB;
+  font-weight: 600;
+  margin-right: 8pt;
+  min-width: 50pt;
+}
+
+.toc-list .toc-title {
+  color: #0F2A4A;
+  font-weight: 500;
+}
+
+.toc-list .toc-leader {
+  flex: 1;
+  border-bottom: 1px dotted #B0B7C3;
+  margin: 0 6pt 4pt 6pt;
+  height: 1pt;
+}
+
+.toc-list .toc-page {
+  color: #4A5568;
+  font-size: 11pt;
+}
+
+.companion-note {
+  background: #F4F6FA;
+  padding: 12px 14px;
+  border-radius: 4px;
+  margin-top: 18pt;
+  font-size: 11pt;
+}
+
+.companion-note strong {
+  color: #0F2A4A;
+}
+
+.companion-note ul {
+  margin: 6pt 0 0 18pt;
+  padding: 0;
+}
+
+.companion-note li {
+  margin-bottom: 3pt;
+  color: #4A5568;
+}
+
+/* Two-column figure layout */
+.fig-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  align-items: start;
+}
+
+.fig-two-col .col-label {
+  font-size: 10.5pt;
+  font-weight: 600;
+  color: #0F2A4A;
+  text-align: center;
+  margin-bottom: 4pt;
+}
+
+/* No-print helper */
+.no-print { }
+
+/* Print styles */
+@media print {
+  body { font-size: 12pt; }
+
+  .part {
+    break-before: page !important;
+    page-break-before: always !important;
+  }
+
+  figure {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    max-height: 200mm;
+    margin: 12pt 0 16pt 0;
+  }
+
+  figure .mermaid,
+  figure .mermaid > svg,
+  figure svg,
+  figure img {
+    max-width: 100% !important;
+    max-height: 180mm !important;
+    width: auto !important;
+    height: auto !important;
+    display: block;
+    margin: 0 auto;
+  }
+
+  figcaption {
+    break-before: avoid !important;
+    page-break-before: avoid !important;
+    margin-top: 6pt;
+  }
+
+  pre {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    max-height: 180mm;
+    overflow: hidden;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+
+  .callout, .math-display {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  table { break-inside: auto; }
+  thead { display: table-header-group; }
+  tfoot { display: table-footer-group; }
+  tr, td, th {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  h1, h2, h3, h4 {
+    break-after: avoid !important;
+    page-break-after: avoid !important;
+    text-wrap: balance;
+  }
+
+  .section-banner, .part-banner {
+    break-after: avoid !important;
+    page-break-after: avoid !important;
+  }
+
+  p, li, dd { widows: 2; orphans: 2; }
+
+  .no-print { display: none !important; }
+
+  /* Running header: Part name left, doc title right */
+  @page {
+    @top-left {
+      content: string(part-name);
+      font-family: Inter, sans-serif;
+      font-size: 9pt;
+      color: #4A5568;
+    }
+    @top-right {
+      content: "LLM Engineering — A Practitioner's Reference · Volume 2";
+      font-family: Inter, sans-serif;
+      font-size: 9pt;
+      color: #4A5568;
+    }
+    @bottom-center {
+      content: counter(page) " / " counter(pages);
+      font-family: Inter, sans-serif;
+      font-size: 9pt;
+      color: #4A5568;
+    }
+    @bottom-left {
+      content: "Volume 2 of 5";
+      font-family: Inter, sans-serif;
+      font-size: 9pt;
+      color: #4A5568;
+    }
+  }
+
+  /* Suppress headers/footers on opener */
+  @page :first {
+    @top-left { content: ""; }
+    @top-right { content: ""; }
+    @bottom-center { content: ""; }
+    @bottom-left { content: ""; }
+  }
+
+  h1.part-title { string-set: part-name content(); }
+}
+
+</style>
+</head>
+<body>
+
+<!-- ============================ VOLUME OPENER ============================ -->
+<section class="volume-opener">
+  <div>
+    <div class="accent-rule"></div>
+    <h1 class="volume-title">LLM Engineering —<br>A Practitioner's Reference</h1>
+    <div class="volume-subtitle">Volume 2 · Retrieval · Agents · Inference</div>
+  </div>
+
+  <div class="opener-decoration">
+    <svg width="240" height="120" viewBox="0 0 240 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <!-- Three parallel decode streams (continuous batching motif) -->
+      <line x1="10" y1="30" x2="230" y2="30" stroke="#E5E9EF" stroke-width="1.5"/>
+      <line x1="10" y1="60" x2="230" y2="60" stroke="#E5E9EF" stroke-width="1.5"/>
+      <line x1="10" y1="90" x2="230" y2="90" stroke="#E5E9EF" stroke-width="1.5"/>
+
+      <!-- Stream 1: short progress -->
+      <circle cx="40"  cy="30" r="5" fill="#0F2A4A"/>
+      <circle cx="55"  cy="30" r="5" fill="#0F2A4A"/>
+      <circle cx="70"  cy="30" r="5" fill="#0F2A4A"/>
+      <circle cx="85"  cy="30" r="5" fill="#1F6FEB"/>
+      <circle cx="100" cy="30" r="5" fill="#1F6FEB" opacity="0.35"/>
+
+      <!-- Stream 2: longest, leading edge -->
+      <circle cx="40"  cy="60" r="5" fill="#0F2A4A"/>
+      <circle cx="55"  cy="60" r="5" fill="#0F2A4A"/>
+      <circle cx="70"  cy="60" r="5" fill="#0F2A4A"/>
+      <circle cx="85"  cy="60" r="5" fill="#0F2A4A"/>
+      <circle cx="100" cy="60" r="5" fill="#0F2A4A"/>
+      <circle cx="115" cy="60" r="5" fill="#1F6FEB"/>
+      <circle cx="130" cy="60" r="5" fill="#1F6FEB" opacity="0.35"/>
+
+      <!-- Stream 3: just started -->
+      <circle cx="40"  cy="90" r="5" fill="#0F2A4A"/>
+      <circle cx="55"  cy="90" r="5" fill="#0F2A4A"/>
+      <circle cx="70"  cy="90" r="5" fill="#1F6FEB"/>
+      <circle cx="85"  cy="90" r="5" fill="#1F6FEB" opacity="0.35"/>
+    </svg>
+  </div>
+
+  <div class="date-line">2026 Edition</div>
+</section>
+
+<!-- ============================ HOW-TO CALLOUT (screen only) ============================ -->
+<div class="no-print" style="margin: 16px 0 24px 0;">
+  <div class="callout">
+    <div class="callout-title">
+      <svg class="callout-icon" viewBox="0 0 24 24" fill="none" stroke="#1F6FEB" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      How to save this volume as a PDF.
+    </div>
+    Open this file in <strong>Chrome</strong> or Edge. Wait until every diagram and equation has finished rendering on screen. Press <strong>Ctrl+P / ⌘P</strong>. Set destination to <strong>"Save as PDF"</strong>. Under "More settings": <strong>Margins → Default</strong>, <strong>Paper size → A4</strong>, <strong>Scale → Default (100 %)</strong>, and <strong>enable "Background graphics"</strong> so banners and callout fills render. Then click <strong>Save</strong>.
+  </div>
+</div>
+
+<!-- ============================ CONTENTS ============================ -->
+<section class="contents-page">
+  <h1>Contents</h1>
+
+  <ul class="toc-list">
+    <li>
+      <span class="toc-label">Part 4</span>
+      <span class="toc-title">Retrieval-Augmented Generation, beyond v1</span>
+      <span class="toc-leader"></span>
+      <span class="toc-page">3</span>
+    </li>
+    <li>
+      <span class="toc-label">Part 5</span>
+      <span class="toc-title">Agentic systems</span>
+      <span class="toc-leader"></span>
+      <span class="toc-page">13</span>
+    </li>
+    <li>
+      <span class="toc-label">Part 6</span>
+      <span class="toc-title">Inference optimization &amp; serving</span>
+      <span class="toc-leader"></span>
+      <span class="toc-page">23</span>
+    </li>
+  </ul>
+
+  <div class="companion-note">
+    <strong>Companion volumes.</strong>
+    <ul>
+      <li><strong>Volume 1</strong> · Parts 1–3: Foundations, Modern Model Landscape, Adapting Models</li>
+      <li><strong>Volume 3</strong> · Parts 7–9: Production engineering, Evaluation, Safety &amp; security</li>
+      <li><strong>Volume 4</strong> · Parts 10–12: MLOps &amp; LLMOps, Multimodal, System design playbook</li>
+      <li><strong>Volume 5</strong> · Parts 13–15: Trends, Curated resources, Glossary</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- PART 4: RAG BEYOND v1                                         -->
+<!-- ============================================================ -->
+<section class="part" id="part-4">
+  <div class="part-banner">
+    <div class="part-label">Part 4</div>
+    <h1 class="part-title">Retrieval-Augmented Generation, beyond v1</h1>
+    <div class="part-deck">A working tour of the techniques that separate a demo-grade RAG from a system that holds up under real corpora, real queries, and real users.</div>
+  </div>
+
+  <p>The first generation of retrieval-augmented generation — embed every chunk with a single dense model, run cosine search, stuff the top-<em>k</em> into the prompt — works for tidy FAQ corpora and falls over almost immediately on heterogeneous, large, or adversarial document collections. This Part covers the techniques and architectural choices that production systems actually use: how to chunk, how to retrieve, how to rerank, how to transform queries, and how to choose an index and a vector store. The framing throughout is engineering, not novelty: most failures in deployed RAG come from boring decisions — parsing, chunking, metadata — not from the choice of retriever.</p>
+
+  <h2>4.1 Chunking strategies</h2>
+
+  <p>Chunking is the unsung determinant of retrieval quality. The chunk is the unit of recall: the embedding represents the chunk, the chunk is what gets returned, and the chunk is what the model has to reason over. Bad chunks make every other component look bad.</p>
+
+  <h3>Fixed-size chunking</h3>
+  <p>The baseline. Split the document into windows of <em>N</em> tokens with an overlap of <em>M</em> tokens. Cheap, deterministic, easy to reproduce, and surprisingly competitive when documents are reasonably uniform. Typical settings are 256–512 tokens with 10–20% overlap. The flaw is mechanical: chunk boundaries cut sentences, tables, and code blocks indiscriminately, and a query whose answer straddles a boundary loses recall to the overlap window — or to luck.</p>
+
+  <h3>Recursive chunking</h3>
+  <p>A hierarchy of separators: split first by document structure (sections, headings), then paragraphs, then sentences, then characters, descending only when a chunk exceeds the size budget. The implementation is a recursive splitter that prefers the most semantically meaningful boundary available. For Markdown, HTML, and code, the structural separators carry signal that fixed-size chunking discards.</p>
+
+  <h3>Semantic chunking</h3>
+  <p>Embed sentences (or short windows), measure cosine similarity between consecutive embeddings, and cut where the similarity drops below a threshold. The intuition is that semantic discontinuities mark topic shifts. The cost is non-trivial — one embedding call per sentence — and the threshold is corpus-dependent. Hybrid approaches use semantic chunking only within sections identified by structural splitters.</p>
+
+  <h3>Late chunking</h3>
+  <p>An inversion of the usual order: embed the entire document (or a long span) with a long-context embedding model, then pool token embeddings into chunk-level vectors. Each chunk's vector therefore reflects context from the whole document, not just its own contents. Late chunking is most useful when a chunk's meaning depends on distant context — pronoun resolution, defined terms introduced earlier, table headers separated from their rows.</p>
+
+  <h3>Proposition-based chunking</h3>
+  <p>Use an LLM to decompose passages into self-contained factual <em>propositions</em>, each phrased without external referents (no unresolved pronouns, no dangling abbreviations). Each proposition becomes its own indexed unit. Recall on factual queries improves measurably; the cost is an extra LLM pass over the corpus and a larger index.</p>
+
+  <div class="callout tip">
+    <div class="callout-title">
+      <svg class="callout-icon" viewBox="0 0 24 24" fill="none" stroke="#1F8B4C" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+      Senior tip.
+    </div>
+    Decouple the <em>retrieval unit</em> from the <em>generation unit</em>. Index small, focused chunks (or propositions) for high-precision retrieval; at generation time, expand each hit to its parent paragraph or section. This is the parent-document pattern in disguise, and it consistently outperforms a single chunk size chosen for both jobs.
+  </div>
+
+  <h2>4.2 Hybrid retrieval and Reciprocal Rank Fusion</h2>
+
+  <p>Dense retrieval with a single embedding model handles paraphrase well but loses against rare tokens, exact identifiers, code symbols, and proper nouns it hasn't seen. Lexical retrieval — BM25, the workhorse of classical IR — handles the latter well and the former poorly. Hybrid retrieval combines both. The dominant fusion method is Reciprocal Rank Fusion (RRF):</p>
+
+  <div style="break-inside: avoid; page-break-inside: avoid;">
+  <div class="math-display">
+    $$\text{RRF}(d) = \sum_{r \in R} \frac{1}{k + \text{rank}_r(d)}$$
+  </div>
+  <p>where \(R\) is the set of retrievers, \(\text{rank}_r(d)\) is the rank of document \(d\) under retriever \(r\) (1-indexed), and \(k\) is a smoothing constant — \(k = 60\) is the conventional choice. RRF is rank-based, so it requires no score calibration between retrievers, which is what makes it robust across retriever pairings. A document need not appear in every retriever's top list to be ranked; missing entries simply contribute zero.</p>
+  </div>
+
+  <p>In practice, hybrid retrieval over BM25 + a strong dense embedder, fused with RRF and then reranked, beats either retriever alone on heterogeneous corpora — often by margins large enough to dwarf the gain from upgrading to a more expensive embedding model.</p>
+
+  <h2>4.3 Reranking</h2>
+
+  <p>A retriever's job is recall: get the right document into the top-<em>k</em>. A reranker's job is precision: order the top-<em>k</em> correctly. Bi-encoders (the standard retrieval embedders) score query and document independently, which is fast and indexable. Cross-encoders feed the concatenation of query and candidate through a transformer, attending across both, which is slow but markedly more accurate. The standard pipeline retrieves a wide top-<em>k</em> (50–200) with a bi-encoder, then reranks down to a narrow top-<em>n</em> (5–20) with a cross-encoder.</p>
+
+  <p><strong>Cohere Rerank</strong> is the most common managed cross-encoder, optimized for latency and supporting long inputs. <strong>BGE-Reranker</strong>, <strong>Jina Reranker</strong>, and the family of MS MARCO–trained MiniLM and DeBERTa cross-encoders are competitive open-weight options. <strong>ColBERT-v2</strong> occupies a middle ground discussed below.</p>
+
+  <div class="callout pitfall">
+    <div class="callout-title">
+      <svg class="callout-icon" viewBox="0 0 24 24" fill="none" stroke="#B45309" stroke-width="2"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      Pitfall.
+    </div>
+    Rerankers do not fix a broken retriever. If the relevant document is not in the top-<em>k</em>, the reranker cannot rescue it. Tune the retriever for recall first, then add the reranker for precision. The common mistake is to throw a reranker at poor retrieval and expect quality to improve.
+  </div>
+
+  <h2>4.4 Query transformation</h2>
+
+  <p>The query the user types is rarely the query the index wants. Query transformation rewrites the user's text into one or more retrieval-friendly forms before embedding.</p>
+
+  <h3>HyDE — Hypothetical Document Embeddings</h3>
+  <p>Ask the LLM to draft a hypothetical answer to the query, then embed that answer and retrieve against the corpus. The intuition: the answer's embedding lives closer to the relevant documents than the question's does, because it shares vocabulary, structure, and tone with them. HyDE helps most when queries are short and the corpus is verbose.</p>
+
+  <h3>Multi-query expansion</h3>
+  <p>Generate several paraphrases of the user's query, retrieve for each, and union (or RRF-fuse) the results. Trades latency and embedding cost for recall on queries where any one phrasing might miss.</p>
+
+  <h3>Step-back prompting</h3>
+  <p>Ask the model to abstract the question to a more general one (the <em>step-back</em>), retrieve evidence for both, and answer using the combined context. Useful when the user's specific query is too narrow to match anything but a more general formulation matches background passages.</p>
+
+  <h3>Sub-question decomposition</h3>
+  <p>Break a multi-part query into atomic sub-questions, retrieve for each independently, and feed all retrieved passages to the generator. This is the foundation of most multi-hop RAG approaches and the natural bridge to agentic retrieval.</p>
+
+  <h2>4.5 Advanced retrieval patterns</h2>
+
+  <h3>Parent-document retrieval</h3>
+  <p>Index small chunks for retrieval precision; at generation time, replace each hit with the parent passage or full document section. Practically the highest-impact, lowest-effort upgrade over a vanilla single-chunk pipeline.</p>
+
+  <h3>Contextual retrieval</h3>
+  <p>Before embedding, prepend each chunk with a one- or two-sentence LLM-generated description of how the chunk fits in its source document — what section, what topic, what the surrounding discussion is about. The embedding then encodes both content and context, which improves recall for ambiguous chunks. Anthropic published this technique in 2024 and reported substantial recall improvements when combined with a reranker; the same idea has been validated independently across other corpora.</p>
+
+  <h3>GraphRAG and RAPTOR</h3>
+  <p><strong>GraphRAG</strong> extracts entities and relations from the corpus, builds a knowledge graph, and clusters the graph into communities. At query time, retrieval can traverse the graph (entity → neighbors), and community summaries provide global context that flat chunk retrieval cannot. GraphRAG shines on questions that require connecting facts spread across many documents — the kind of question vanilla RAG fails at silently.</p>
+
+  <p><strong>RAPTOR</strong> (Recursive Abstractive Processing for Tree-Organized Retrieval) clusters chunks bottom-up and uses an LLM to summarize each cluster, then clusters the summaries, recursively. The result is a tree where leaves are raw chunks and higher levels are progressively more abstract summaries. Retrieval can target any level of the tree, giving the generator both detail and synthesis.</p>
+
+  <h3>Self-RAG, Corrective RAG, Agentic RAG</h3>
+  <p><strong>Self-RAG</strong> trains (or prompts) the model to emit reflection tokens that decide whether to retrieve, evaluate retrieved evidence, and self-critique its own output. <strong>Corrective RAG</strong> grades retrieved passages; if quality is poor, it falls back to web search or query rewriting before generating. <strong>Agentic RAG</strong> generalizes this further: the retriever is a tool, the corpus is one of several knowledge sources, and an agent decides what to query, when to refine, and when to stop. Agentic RAG blurs the boundary with Part 5; the engineering questions about loops, budgets, and termination are the same.</p>
+
+  <figure>
+    <div class="fig-two-col">
+      <div>
+        <div class="col-label">Naive RAG</div>
+        <div class="mermaid">
+flowchart TB
+  A[User query]:::q --> B[Embed &amp; search]:::s
+  B --> C[Top-k chunks &rarr; LLM]:::g
+  classDef q fill:#F4F6FA,stroke:#0F2A4A,color:#0F2A4A;
+  classDef s fill:#E5E9EF,stroke:#0F2A4A,color:#0F2A4A;
+  classDef g fill:#1F6FEB,stroke:#0F2A4A,color:#FFFFFF;
+        </div>
+      </div>
+      <div>
+        <div class="col-label">Advanced RAG</div>
+        <div class="mermaid">
+flowchart TB
+  A[Query rewrite + HyDE]:::q --> B[Hybrid retrieve + rerank]:::s
+  B --> C[Self-check &amp; cite &rarr; LLM]:::g
+  classDef q fill:#F4F6FA,stroke:#0F2A4A,color:#0F2A4A;
+  classDef s fill:#E5E9EF,stroke:#0F2A4A,color:#0F2A4A;
+  classDef g fill:#1F6FEB,stroke:#0F2A4A,color:#FFFFFF;
+        </div>
+      </div>
+    </div>
+    <figcaption>Figure 4.1 — Naive RAG (left) treats retrieval as a single black box; advanced RAG (right) layers query transformation, hybrid retrieval, reranking, and post-retrieval verification.</figcaption>
+  </figure>
+
+  <figure>
+    <div class="mermaid">
+flowchart TB
+  subgraph Ingest [Ingestion]
+    A[Parse documents] --> B[Chunk + clean]
+    B --> C[Extract entities]
+  end
+  subgraph Index [Indexing]
+    D[Embed chunks] --> E[Vector index]
+    C --> F[Knowledge graph]
+    F --> G[Cluster + summarize]
+    G --> H[Tree of summaries]
+  end
+  subgraph Retrieve [Retrieval]
+    Q[Query] --> R[Vector search]
+    Q --> S[Graph traversal]
+    R --> T[Fuse + rerank]
+    S --> T
+    H --> T
+    T --> U[LLM with evidence]
+  end
+  Ingest --> Index --> Retrieve
+    </div>
+    <figcaption>Figure 4.2 — A unified architecture that subsumes GraphRAG and RAPTOR: ingestion produces both chunks and an entity graph; indexing builds a vector store, a knowledge graph, and a recursive summary tree; retrieval fuses signals from all three.</figcaption>
+  </figure>
+
+  <h2>4.6 ANN index families</h2>
+
+  <p>Once the corpus is large enough that exact \(O(N)\) cosine search is too slow, approximate nearest-neighbor (ANN) indexes take over. Each family trades recall, latency, memory, and indexing cost differently.</p>
+
+  <h3>HNSW — Hierarchical Navigable Small World graphs</h3>
+  <p>A multi-layer graph where higher layers are sparser. Search starts at the top layer and greedily descends. HNSW gives excellent recall–latency curves and is the default in most production vector stores. Memory cost is high — the graph must live in RAM — and indexing is incremental but slow on large updates. Tuning revolves around <code>M</code> (graph degree, typically 16–64) and <code>ef_construction</code> / <code>ef_search</code> (candidate list sizes; higher means better recall, slower search).</p>
+
+  <h3>IVF and IVF-PQ</h3>
+  <p>Inverted-File indexes partition the vector space into Voronoi cells via k-means; search visits the <code>nprobe</code> cells nearest the query. Cheaper than HNSW in memory and faster to build, but recall–latency is generally worse at the same size. <strong>IVF-PQ</strong> further compresses each vector with product quantization — splitting it into sub-vectors and encoding each with a small codebook — at a substantial recall cost in exchange for major memory savings. PQ becomes attractive only at billions of vectors.</p>
+
+  <h3>ScaNN</h3>
+  <p>Google's anisotropic-quantization-based index optimizes the quantization specifically for inner-product search. On its preferred operating points, ScaNN delivers competitive recall at lower memory than HNSW, and is the foundation of Vertex AI Vector Search.</p>
+
+  <h3>FAISS internals</h3>
+  <p>FAISS is the reference library, implementing IVF, IVF-PQ, HNSW, OPQ, and many composite indexes (e.g., <code>IVF65536_HNSW32,PQ16</code>). It is a building block, not a service: production systems wrap it in a server with replication, sharding, and persistence, or use a vector database that does so.</p>
+
+  <div class="callout">
+    <div class="callout-title">
+      <svg class="callout-icon" viewBox="0 0 24 24" fill="none" stroke="#1F6FEB" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+      Key idea.
+    </div>
+    Exact search still wins for small corpora — under, very roughly, a million vectors on a single beefy machine. Default to brute-force <code>numpy</code> or FAISS <code>IndexFlatIP</code> until measured latency forces a change. ANN's complexity is justified by scale, not by sophistication.
+  </div>
+
+  <h2>4.7 Vector database landscape</h2>
+
+  <table>
+    <caption>Table 4.1 · Vector database options and where each fits.</caption>
+    <thead>
+      <tr><th>Store</th><th>Hosting</th><th>Strengths</th><th>Watch-outs</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Pinecone</td><td>Managed only</td><td>Operationally simple, serverless tier, mature filtering</td><td>Vendor lock-in, cost at scale</td></tr>
+      <tr><td>Weaviate</td><td>Self-host or managed</td><td>Hybrid retrieval built in, modular vectorizers, GraphQL</td><td>Schema rigidity, JVM footprint</td></tr>
+      <tr><td>Qdrant</td><td>Self-host or managed</td><td>Rust core, strong filtering performance, payload-aware HNSW</td><td>Smaller ecosystem than alternatives</td></tr>
+      <tr><td>Milvus</td><td>Self-host or Zilliz Cloud</td><td>Distributed by design, many index types, billion-scale</td><td>Heavy operationally, more knobs than most teams need</td></tr>
+      <tr><td>pgvector</td><td>Postgres extension</td><td>Lives next to your relational data, SQL filters, transactions</td><td>HNSW added later; tune carefully past tens of millions</td></tr>
+      <tr><td>LanceDB</td><td>Embedded / serverless</td><td>Columnar on object storage, no server to run, good for ML</td><td>Newer; ecosystem still maturing</td></tr>
+    </tbody>
+  </table>
+
+  <p>Selection criteria reduce to a few practical questions: do you already run Postgres (then start with pgvector); do you need hybrid retrieval as a first-class feature (Weaviate or Qdrant); do you need billion-scale distributed search (Milvus); do you want zero operational burden (Pinecone or a managed equivalent). Most teams do not need the index family they think they need; they need the integration with their existing stack.</p>
+
+  <h2>4.8 Multi-vector retrieval</h2>
+
+  <p>Single-vector representations compress an entire passage into one point, which is lossy by construction. Multi-vector approaches keep more.</p>
+
+  <p><strong>ColBERT-v2</strong> stores one vector per token and scores a query–document pair with a <em>late-interaction</em> operation: for each query token, take the maximum similarity over document tokens, then sum. This MaxSim scoring captures fine-grained term-level matching that pooled embeddings miss. The cost is index size — token-level vectors blow up storage — partially mitigated by ColBERT-v2's compression and centroid-based pruning. ColBERT is increasingly used as a reranker over a bi-encoder retriever, where its precision pays off without requiring a token-level index of the entire corpus.</p>
+
+  <p><strong>ColPali</strong> applies the same late-interaction idea to visually rich documents. Instead of running OCR + layout parsing + chunking, ColPali embeds page <em>images</em> directly with a vision-language encoder, producing a grid of patch-level vectors per page. Retrieval is then late interaction between query token vectors and document patch vectors. For documents where layout, figures, and tables carry information that text extraction destroys — financial filings, scientific papers, scanned forms — ColPali and its descendants substantially outperform OCR-then-embed pipelines.</p>
+
+  <h2>4.9 Filtering: metadata, freshness, access control</h2>
+
+  <p>Retrieval is rarely just "nearest by cosine." Every production index also enforces filters.</p>
+
+  <ul>
+    <li><strong>Metadata filtering</strong> restricts results by structured fields — author, source, document type, language, tags. Index implementations differ in how filtering interacts with HNSW: pre-filter (filter first, then search a smaller graph) is fast for restrictive filters; post-filter (search, then drop non-matching) is fast for permissive ones. A good vector store picks the strategy automatically based on selectivity estimates.</li>
+    <li><strong>Time decay and freshness</strong> bias retrieval toward recent content for time-sensitive corpora. Implementations multiply the similarity score by an exponential or power-law decay over document age, or filter to a sliding window. The decision must be corpus-specific: a news index needs aggressive decay; a legal-precedent index needs essentially none.</li>
+    <li><strong>Access-control filters</strong> are non-negotiable in multi-tenant systems. The cleanest design is a tenant-id field on every chunk, enforced at query time as a hard filter — never as a soft constraint, never via prompt. Treating retrieval results as untrusted is a defense-in-depth posture; we return to this in the agent-security discussion in Part 5.</li>
+  </ul>
+
+  <h2>4.10 Document parsing — the silent bottleneck</h2>
+
+  <p>Parsing quality often dominates retrieval quality. A pipeline that loses table structure, drops figure captions, or splits headings from their bodies cannot recover later, no matter how good the embedder. The tooling has matured noticeably.</p>
+
+  <ul>
+    <li><strong>Unstructured</strong> handles a long tail of formats (PDF, DOCX, HTML, EML, PPTX, images) and emits layout-aware element types — title, narrative text, list item, table, image. Good general-purpose default.</li>
+    <li><strong>LlamaParse</strong> targets PDFs with tables and complex layouts using an LLM-driven parser. Strong on financial and scientific documents; managed only.</li>
+    <li><strong>Docling</strong> is an open-source model-driven document parser focused on producing high-fidelity Markdown and structured output from PDFs, including table-structure recovery.</li>
+    <li><strong>Marker</strong> converts PDFs to Markdown using a pipeline of specialized models for layout, OCR, and table extraction; designed for batch conversion at scale.</li>
+  </ul>
+
+  <p>Whichever tool is chosen, treat parsing as a first-class component with its own evaluation: sample documents, hand-label expected output, and score the parser against ground truth. The parser is the ceiling on every downstream metric.</p>
+
+  <h2>4.11 Embedding models and domain fine-tuning</h2>
+
+  <p>The MTEB benchmark — Massive Text Embedding Benchmark — is the standard reference for general-purpose embedding quality, covering retrieval, clustering, classification, and reranking tasks across many languages. The leaderboard shifts frequently; the practical takeaway is that the top open-weight models (the BGE family, the E5 family, GTE, Nomic Embed, Stella, and the Jina line) trade leadership constantly and any of them is a reasonable starting point. Closed models — OpenAI's <code>text-embedding-3-large</code>, Cohere's <code>embed-v3</code>, Voyage's domain-tuned variants — remain competitive and offer convenience.</p>
+
+  <p>For high-stakes domain corpora, fine-tuning an embedding model on in-domain (query, positive, hard-negative) triples typically beats the best off-the-shelf model. The data construction is the hard part: positives can be mined from clicks, citations, or LLM-generated query–document pairs; hard negatives must be tricky — semantically related but wrong — and are usually mined from the retriever's own near-misses. Contrastive losses (InfoNCE, multi-negative ranking) are standard.</p>
+
+  <p class="snippet-caption">Hybrid retrieval (BM25 + dense), RRF fusion, and cross-encoder rerank.</p>
+  <pre><span class="lang-label">Python</span><code class="language-python">from rank_bm25 import BM25Okapi
+from sentence_transformers import SentenceTransformer, CrossEncoder
+import numpy as np
+
+embedder = SentenceTransformer("BAAI/bge-large-en-v1.5")
+reranker = CrossEncoder("BAAI/bge-reranker-large")
+bm25     = BM25Okapi([doc.lower().split() for doc in CORPUS])
+dense    = embedder.encode(CORPUS, normalize_embeddings=True)
+
+def retrieve(query, k_retrieve=50, k_final=10, rrf_k=60):
+    q_vec   = embedder.encode([query], normalize_embeddings=True)[0]
+    dense_r = np.argsort(-(dense @ q_vec))[:k_retrieve]
+    bm25_r  = np.argsort(-bm25.get_scores(query.lower().split()))[:k_retrieve]
+    scores  = {}
+    for rank, idx in enumerate(dense_r): scores[idx]  = scores.get(idx, 0) + 1/(rrf_k + rank + 1)
+    for rank, idx in enumerate(bm25_r):  scores[idx]  = scores.get(idx, 0) + 1/(rrf_k + rank + 1)
+    fused   = sorted(scores, key=scores.get, reverse=True)[:k_retrieve]
+    pairs   = [(query, CORPUS[i]) for i in fused]
+    rr      = reranker.predict(pairs)
+    return [CORPUS[fused[i]] for i in np.argsort(-rr)[:k_final]]
+</code></pre>
+
+</section>
+
+<!-- ============================================================ -->
+<!-- PART 5: AGENTIC SYSTEMS                                      -->
+<!-- ============================================================ -->
+<section class="part" id="part-5">
+  <div class="part-banner">
+    <div class="part-label">Part 5</div>
+    <h1 class="part-title">Agentic systems</h1>
+    <div class="part-deck">From a single ReAct loop to multi-agent graphs and tool ecosystems — what works in production, what fails silently, and where the budgets blow up.</div>
+  </div>
+
+  <p>An <em>agent</em>, for the purposes of this Part, is an LLM that decides — in a loop — which tools to call, with what arguments, until a goal is reached or a budget is exhausted. The minimum viable agent is a few hundred lines of code. The interesting engineering is everything that surrounds the loop: how tools are defined, how state is carried, how memory is structured, how orchestration scales beyond a single agent, and how the system stays safe and bounded.</p>
+
+  <h2>5.1 Reasoning patterns</h2>
+
+  <h3>ReAct</h3>
+  <p>The foundational pattern: the model alternates <em>Thought</em> (free-text reasoning), <em>Action</em> (a tool call), and <em>Observation</em> (the tool's output). The loop terminates when the model emits a final answer instead of an action. ReAct is simple, robust on short-horizon tasks, and the substrate that most other patterns build on. Its weakness is that the trajectory is opaque — every step depends on the running thought stream, and a single bad thought derails the rest.</p>
+
+  <h3>Plan-and-Execute</h3>
+  <p>Separate planning from execution. A planner LLM produces a sequence of steps up front; an executor (often a smaller model) runs each step. Planning latency is paid once, execution is parallelizable, and the plan provides a checkpointable structure for replanning. Trade-off: rigid plans struggle when early observations should have changed the plan.</p>
+
+  <h3>Reflexion</h3>
+  <p>After a failed attempt, the agent generates a written self-critique — what went wrong and what to try differently — and stores it in long-term memory. The next attempt conditions on the reflection. Reflexion is most useful when the task is repeatable (the agent will see similar problems again) and a clear success/failure signal is available.</p>
+
+  <h3>Tree-of-Thoughts</h3>
+  <p>Rather than committing to a single chain, expand multiple candidate thoughts at each step, evaluate them (via the model itself, a verifier, or a heuristic), and search the resulting tree with BFS, DFS, or beam search. ToT helps on problems with many viable partial solutions and a way to prune — puzzles, planning, constrained generation. The cost is real: a ToT run can issue an order of magnitude more tokens than a chain-of-thought baseline.</p>
+
+  <h3>Debate and router-agents</h3>
+  <p>In <strong>debate</strong>, two or more models argue opposing positions on a question; a judge model (or a rule) decides. Debate has been studied as both a quality and a safety mechanism — the hope being that adversarial pressure surfaces hidden errors. <strong>Router-agents</strong> are the simplest multi-agent pattern: a controller classifies the query and dispatches to a specialist. Cheap, often more impactful than glamorous architectures, and the right starting point for most multi-agent designs.</p>
+
+  <figure>
+    <div class="mermaid">
+sequenceDiagram
+  autonumber
+  participant U as User
+  participant A as Agent
+  participant T as Tools
+  U->>A: Goal
+  loop ReAct loop
+    A->>A: Thought
+    A->>T: Action
+    T-->>A: Observation
+  end
+  A-->>U: Final answer
+    </div>
+    <figcaption>Figure 5.1 — The ReAct loop: interleaved Thought, Action, and Observation steps until a stopping condition is reached.</figcaption>
+  </figure>
+
+  <h2>5.2 Frameworks</h2>
+
+  <p>The framework landscape has consolidated since the early LangChain era. Each survivor has a distinct theory of what an agent is.</p>
+
+  <table>
+    <caption>Table 5.1 · Agent frameworks and where each fits.</caption>
+    <thead>
+      <tr><th>Framework</th><th>Mental model</th><th>Best fit</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>LangGraph</td><td>State machine over a typed shared state</td><td>Production agents with branching, retries, human-in-the-loop checkpoints</td></tr>
+      <tr><td>LlamaIndex Workflows</td><td>Event-driven graph with typed events</td><td>Async, RAG-heavy pipelines with pluggable steps</td></tr>
+      <tr><td>AutoGen</td><td>Conversational multi-agent groups</td><td>Research, exploratory multi-agent dialogs</td></tr>
+      <tr><td>CrewAI</td><td>Role-based crews with tasks</td><td>Quick prototypes of role-specialized teams</td></tr>
+      <tr><td>OpenAI Agents SDK</td><td>Lightweight loop with handoffs and guardrails</td><td>Single-vendor stacks anchored on OpenAI models</td></tr>
+      <tr><td>PydanticAI</td><td>Type-safe agents with structured outputs</td><td>Strict schemas, deterministic IO, Python-first</td></tr>
+      <tr><td>smolagents</td><td>Code-as-action agents (Python execution as the action space)</td><td>Tasks where the action is naturally a piece of code</td></tr>
+    </tbody>
+  </table>
+
+  <p><strong>LangGraph</strong> deserves emphasis: it explicitly models the agent as a graph of nodes operating on a shared, typed state, with edges (including conditional ones) defining transitions. This makes durability, replay, observability, and human-in-the-loop trivial — the state is the unit of persistence — and it has become the default for production-grade orchestration. The mental shift it forces (from prompts to graphs) is worth the cost.</p>
+
+  <p>The pragmatic guidance: pick the simplest framework that fits the problem, and prefer ones that let you drop down to plain Python when you need to. Most agent failures are debugging failures, and frameworks that hide control flow make debugging harder.</p>
+
+  <h2>5.3 Tool use and function calling</h2>
+
+  <p>A "tool" is any function the model can invoke by emitting a structured call. The contract has standardized on JSON Schema: the developer publishes a schema describing each function's name, parameters, and types; the model emits an object conforming to one of those schemas; the runtime validates, executes, and returns the result.</p>
+
+  <p>Three operational details matter more than they should.</p>
+
+  <ul>
+    <li><strong>Structured outputs</strong> — modern providers offer schema-constrained decoding (OpenAI structured outputs, Anthropic tool use, Gemini function calling, Mistral's structured mode). Use them. Free-form JSON is a class of bug, not a strategy.</li>
+    <li><strong>Parallel tool calls</strong> — most major models can emit multiple tool calls in a single assistant turn, to be executed concurrently. This collapses what used to be sequential round-trips and is the single largest latency optimization in agent code, when applicable.</li>
+    <li><strong>JSON-mode quirks</strong> — under strict-JSON modes, models occasionally produce schema-valid but semantically wrong arguments (right field, wrong content). Validate at the application layer; never trust the schema alone.</li>
+  </ul>
+
+  <p>Tool design itself deserves the same care as API design. Names should be verbs. Descriptions should be written for the model, not for a human reading documentation — the model is the consumer. Parameters should be minimal and orthogonal. Errors returned from a tool to the model should be informative <em>to the model</em>: include hints about how to recover, not stack traces.</p>
+
+  <h2>5.4 Model Context Protocol (MCP)</h2>
+
+  <p>The Model Context Protocol, introduced by Anthropic in late 2024, standardizes how applications expose tools, resources, and prompts to LLMs. It is, in effect, the LSP-equivalent for AI applications: a single protocol that lets any compliant client (Claude Desktop, Cursor, an in-house agent runtime) consume any compliant server (a filesystem bridge, a Postgres connector, an internal-API gateway).</p>
+
+  <h3>Anatomy</h3>
+  <p>MCP defines three roles. A <strong>host</strong> is the application that owns the user interaction (a chat UI, an IDE). A <strong>client</strong> is the bridge inside the host that speaks MCP to one or more servers. A <strong>server</strong> exposes capabilities — <em>tools</em> (callable functions), <em>resources</em> (URI-addressable read-only data), and <em>prompts</em> (parameterized templates the user can invoke). Communication is JSON-RPC 2.0 over a transport: stdio (for local servers spawned as subprocesses) or HTTP with Server-Sent Events / streamable HTTP for remote servers.</p>
+
+  <h3>Realistic use cases</h3>
+  <p>The compelling examples are the unglamorous ones. A filesystem server lets the agent read and write files in a sandboxed directory. A database server exposes a schema-aware <code>query</code> tool against a read-replica. An internal-API server wraps the company's REST endpoints with authentication and parameter validation. A Git server lets the agent inspect history without shelling out. Each server is small, focused, and reusable across hosts.</p>
+
+  <h3>Security considerations</h3>
+  <p>MCP shifts a lot of the security surface: an agent that loads an arbitrary MCP server inherits whatever capabilities that server exposes. Servers should run with least privilege, expose narrow tools, and treat the agent's inputs as untrusted. Hosts should require user consent on first connection to a server and on first invocation of a destructive tool. The protocol does not, by itself, enforce any of this — the host and the server do.</p>
+
+  <figure>
+    <div class="mermaid">
+sequenceDiagram
+  autonumber
+  participant H as Host
+  participant C as Client
+  participant S as Server
+  H->>C: Initialize session
+  C->>S: initialize
+  S-->>C: capabilities
+  C->>S: list tools
+  S-->>C: tool schemas
+  H->>C: User picks tool
+  C->>S: call tool
+  S-->>C: tool result
+  C-->>H: result to LLM
+    </div>
+    <figcaption>Figure 5.2 — MCP message flow. Capability negotiation up front, then any number of tool calls over the same session.</figcaption>
+  </figure>
+
+  <h2>5.5 Memory systems</h2>
+
+  <p>"Memory" in agents is overloaded. At least four distinct things go by the name.</p>
+
+  <ul>
+    <li><strong>Scratchpad</strong> — the running working memory inside a single trajectory: prior thoughts, prior tool results, prior partial answers. The transformer's context window is its scratchpad by default.</li>
+    <li><strong>Episodic memory</strong> — full trajectories of past sessions, retrievable as exemplars. Useful when the agent has to learn from its own history, as in Reflexion.</li>
+    <li><strong>Semantic memory</strong> — distilled facts about users, projects, or the world, written and read by the agent over time. Implementation is typically a small structured store with LLM-driven write rules.</li>
+    <li><strong>Vector + graph memory</strong> — when episodic and semantic memory grow, they need their own retrieval layer. The same techniques as RAG apply, often with an entity graph layered over the vector store to capture relations between people, projects, and events.</li>
+  </ul>
+
+  <p>The umbrella term that has stuck is <em>context engineering</em> — the deliberate construction of what goes into the model's context window at each step: instructions, retrieved evidence, scratchpad state, distilled memory, and tool schemas. It is the agent-era successor to prompt engineering, and the same discipline that retrieval and reranking serve in RAG.</p>
+
+  <h2>5.6 Tool retrieval at scale</h2>
+
+  <p>An agent with five tools fits the schemas in its system prompt and invokes them precisely. An agent with five hundred tools — the realistic state of any sufficiently large enterprise integration — does not. Schemas balloon the context, accuracy drops, and latency rises.</p>
+
+  <p>The fix is to treat tool selection as a retrieval problem. Embed each tool's name, description, and parameter summary; at each step, retrieve the top-<em>k</em> tools relevant to the current user goal and recent context, and only show those schemas to the model. Re-retrieve when the conversation pivots. The same hybrid retrieval and reranking techniques from Part 4 apply, and the same evaluation practices: measure tool-recall@k against a labeled set of (query, correct-tool) pairs.</p>
+
+  <h2>5.7 Computer-use and browser-control agents</h2>
+
+  <p>A specialized class of agent operates not over an API but over a graphical interface — taking screenshots, deciding where to click, typing, and reading what changes. Anthropic's Computer Use, OpenAI's Operator-style approaches, and a long tail of Playwright-driven harnesses are the visible examples.</p>
+
+  <p>The unique failure modes are worth naming. <strong>Mis-clicks</strong> — the model points at the wrong pixel because the screenshot is downsized or the layout shifted. <strong>Drift</strong> — over a long session the agent loses track of what state the page is in and starts issuing actions that no longer make sense. <strong>Modality leakage</strong> — text on the page is misread as instruction (a particularly serious case of prompt injection, addressed below). <strong>Latency tax</strong> — every step is screenshot, model call, action, wait, screenshot again, which compounds quickly. Computer-use agents are powerful but expensive on every axis: tokens, time, money, and reliability.</p>
+
+  <h2>5.8 Agent sandboxing and security</h2>
+
+  <p>Prompt injection is a category of vulnerability where adversarial text inside a model's input — a retrieved document, a webpage, an email body — overrides the developer's intended instructions. In a chat assistant, the worst case is usually a wrong answer. In an agent, the agent <em>acts</em> on the injection: it sends emails, executes code, deletes files, transfers money. The threat model is fundamentally different.</p>
+
+  <p>Defenses must compose, because no single one is reliable.</p>
+
+  <ul>
+    <li><strong>Least-privilege tools.</strong> An agent that only needs to read should not have a write tool. An agent that needs to send messages to one channel should not have a tool that sends to any channel. Tool surface area is attack surface area.</li>
+    <li><strong>Privilege separation between trusted and untrusted content.</strong> Treat retrieved documents, emails, and web pages as untrusted input that can never elevate to instructions. Some teams enforce this structurally — a separate model call distills untrusted input into facts, which are then fed to the action-taking model.</li>
+    <li><strong>Human-in-the-loop confirmation</strong> for destructive or high-stakes actions: send-money, delete-record, publish-post. Cheap, well-understood, and the only defense that holds reliably under unknown attacks.</li>
+    <li><strong>Sandboxing.</strong> Code execution tools run in containers, gVisor, Firecracker, or hosted sandboxes (E2B, Modal sandboxes, Daytona). Network egress is denied by default; filesystem access is limited to a temp directory.</li>
+    <li><strong>Output filtering.</strong> Before an agent action takes effect, run it through policy checks: rate limits, allowlists for URLs and recipients, schemas for outbound payloads.</li>
+  </ul>
+
+  <div class="callout pitfall">
+    <div class="callout-title">
+      <svg class="callout-icon" viewBox="0 0 24 24" fill="none" stroke="#B45309" stroke-width="2"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/></svg>
+      Pitfall.
+    </div>
+    "We'll just tell the model to ignore instructions in retrieved content" is not a defense. Models comply with such system prompts probabilistically and inconsistently, and a sufficiently clever injection bypasses any single textual instruction. Treat prompt-level mitigations as one layer among several, never as the layer.
+  </div>
+
+  <h2>5.9 Multi-agent orchestration</h2>
+
+  <p>Once a single agent is no longer enough — because the task decomposes naturally, because tools belong to different domains, or because specialization improves quality — orchestration patterns appear.</p>
+
+  <ul>
+    <li><strong>Hierarchical</strong> — a supervisor agent delegates to specialist agents and integrates their results. Simple to reason about, easy to debug, and the right default.</li>
+    <li><strong>Graph-based</strong> — agents are nodes in an explicit state graph (LangGraph's native model), with edges encoding handoffs and conditions. Suits non-trivial control flow with branching and loops.</li>
+    <li><strong>Blackboard</strong> — agents read and write to a shared workspace; coordination is implicit. Flexible but prone to coordination failures and hard to debug; reach for it last.</li>
+  </ul>
+
+  <p>Two empirical observations save many teams time. First, multi-agent systems are not automatically better than a single well-tooled agent — they often introduce coordination overhead that swallows the specialization gain. Second, when multi-agent does help, it is usually because the agents have <em>different capabilities</em> (different tools, different memory scopes, different models), not because they have different "personas."</p>
+
+  <figure>
+    <div class="mermaid">
+flowchart TB
+  S[Supervisor]:::sup -->|route| R[Researcher]:::ag
+  S -->|route| C[Coder]:::ag
+  S -->|route| W[Writer]:::ag
+  R -->|results| S
+  C -->|results| S
+  W -->|results| S
+  S -->|done| F[Final answer]:::out
+  classDef sup fill:#1F6FEB,stroke:#0F2A4A,color:#FFFFFF;
+  classDef ag fill:#F4F6FA,stroke:#0F2A4A,color:#0F2A4A;
+  classDef out fill:#1F8B4C,stroke:#0F2A4A,color:#FFFFFF;
+    </div>
+    <figcaption>Figure 5.3 — A hierarchical multi-agent state graph. The supervisor routes work to specialists by capability, not by persona, and integrates their results.</figcaption>
+  </figure>
+
+  <h2>5.10 Evaluating agents</h2>
+
+  <p>Agent evaluation is harder than chat evaluation because trajectories matter, not just final answers. Three layers of evaluation belong in any serious system.</p>
+
+  <ul>
+    <li><strong>Trajectory evaluation</strong> — for each labeled task, compare the agent's trace (tool calls, arguments, intermediate observations) against a reference trace. Useful for regression: a change that produces the same answer via a worse path is a regression.</li>
+    <li><strong>Tool-call accuracy</strong> — for each step, was the chosen tool correct, were the arguments correct, did the call succeed. This is the agent analog of unit tests.</li>
+    <li><strong>End-to-end success</strong> — did the agent achieve the goal, by some task-specific success function. The headline metric, but the noisiest one.</li>
+  </ul>
+
+  <p>Public benchmarks (SWE-bench for code-fixing agents, GAIA for general assistants, WebArena and VisualWebArena for browser agents, AgentBench as a meta-suite) are starting points but rarely match a production task. Most teams end up building a small, growing, hand-curated trajectory dataset and running it on every change.</p>
+
+  <h2>5.11 Cost and latency budgets</h2>
+
+  <p>Agents are not chat. A single user request can issue tens or hundreds of model calls, multiplied across users. Two budgets must be set explicitly, before architecture: a <em>token budget</em> per user-visible action, and a <em>wall-clock budget</em> per user-visible action. Without these, costs and latencies discovered at incident time will be much higher than anyone planned for.</p>
+
+  <p>Practical levers include: cap loop iterations and degrade gracefully; cache tool results within a session; route easy steps to small models and hard steps to frontier models (a router-agent of one); use parallel tool calls; prune the scratchpad aggressively; truncate retrieved evidence to the tightest top-<em>k</em> the task tolerates. Every one of these is a measurable savings, and together they often determine whether an agent is economically viable.</p>
+
+  <p class="snippet-caption">Minimal LangGraph state graph: two nodes, one conditional edge, typed shared state.</p>
+  <pre><span class="lang-label">Python</span><code class="language-python">from typing import TypedDict, Annotated
+from langgraph.graph import StateGraph, END
+from operator import add
+
+class State(TypedDict):
+    question: str
+    drafts: Annotated[list[str], add]
+    accepted: bool
+
+def draft(state: State) -> dict:
+    answer = llm.invoke(f"Draft an answer to: {state['question']}").content
+    return {"drafts": [answer]}
+
+def critique(state: State) -> dict:
+    last = state["drafts"][-1]
+    verdict = llm.invoke(f"Is this correct? Reply YES or NO. {last}").content
+    return {"accepted": verdict.strip().upper().startswith("YES")}
+
+g = StateGraph(State)
+g.add_node("draft", draft)
+g.add_node("critique", critique)
+g.set_entry_point("draft")
+g.add_edge("draft", "critique")
+g.add_conditional_edges("critique", lambda s: END if s["accepted"] else "draft")
+agent = g.compile()
+</code></pre>
+
+  <p class="snippet-caption">Minimal MCP server (Python): one tool, stdio transport.</p>
+  <pre><span class="lang-label">Python</span><code class="language-python">from mcp.server.fastmcp import FastMCP
+
+mcp = FastMCP("calc")
+
+@mcp.tool()
+def add(a: float, b: float) -> float:
+    """Return a + b."""
+    return a + b
+
+@mcp.tool()
+def multiply(a: float, b: float) -> float:
+    """Return a * b."""
+    return a * b
+
+if __name__ == "__main__":
+    mcp.run(transport="stdio")
+</code></pre>
+
+</section>
+
+<!-- ============================================================ -->
+<!-- PART 6: INFERENCE OPTIMIZATION & SERVING                      -->
+<!-- ============================================================ -->
+<section class="part" id="part-6">
+  <div class="part-banner">
+    <div class="part-label">Part 6</div>
+    <h1 class="part-title">Inference optimization &amp; serving</h1>
+    <div class="part-deck">Engines, quantization, KV-cache tricks, speculative decoding, and the serving stack — what to choose, why, and what to measure once it's running.</div>
+  </div>
+
+  <p>Training-time choices set the ceiling on a model's quality; inference-time choices set the floor on its economics. This Part covers the modern serving stack as it stands in 2025–2026: engines and their specializations, the quantization landscape, the KV-cache techniques that dominate decode performance, the speculative-decoding family, and the operational decisions — capacity, batching, sizing — that determine whether a deployment is sustainable.</p>
+
+  <h2>6.1 Inference engines</h2>
+
+  <p>The engine is the layer that turns a model's weights and a stream of requests into tokens. The right choice depends on hardware, model family, latency profile, and the team's appetite for operational complexity.</p>
+
+  <table>
+    <caption>Table 6.1 · Inference engines and their preferred use cases.</caption>
+    <thead>
+      <tr><th>Engine</th><th>Hardware focus</th><th>Where it shines</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>vLLM</td><td>NVIDIA, AMD, Intel, TPU (growing)</td><td>General-purpose high-throughput serving; PagedAttention; broad model support</td></tr>
+      <tr><td>TGI (Text Generation Inference)</td><td>NVIDIA, Intel</td><td>Hugging Face ecosystem integration; production-tested</td></tr>
+      <tr><td>TensorRT-LLM</td><td>NVIDIA only</td><td>Lowest latency on NVIDIA when willing to invest in build complexity</td></tr>
+      <tr><td>SGLang</td><td>NVIDIA, AMD</td><td>Structured generation, RadixAttention prefix sharing, complex prompts</td></tr>
+      <tr><td>LMDeploy</td><td>NVIDIA</td><td>Strong quantization support; popular in Asia-Pacific deployments</td></tr>
+      <tr><td>llama.cpp</td><td>CPU, Apple Silicon, GPU</td><td>Edge, laptop, and constrained-hardware inference; GGUF format</td></tr>
+      <tr><td>MLX</td><td>Apple Silicon</td><td>Native Apple-silicon performance; on-device experimentation</td></tr>
+      <tr><td>Ollama</td><td>Local desktop</td><td>One-command local inference for developer workflows</td></tr>
+    </tbody>
+  </table>
+
+  <p><strong>vLLM</strong> remains the default for self-hosted production GPU inference; the combination of PagedAttention, continuous batching, and broad model coverage is hard to beat. <strong>TensorRT-LLM</strong> is the right choice when latency is paramount, the model is well-supported, and the team can absorb engine builds and graph compilation. <strong>SGLang</strong> wins when prompts have shared prefixes (system prompts, few-shot examples, agent scratchpads) — its RadixAttention reuses KV cache across requests with the same prefix and yields large throughput gains on those workloads. <strong>llama.cpp</strong> and <strong>Ollama</strong> own the local and edge story; <strong>MLX</strong> is the same story on Apple silicon.</p>
+
+  <h2>6.2 Quantization</h2>
+
+  <p>Quantization reduces the precision of weights, activations, or both, trading numerical accuracy for memory and compute savings. The format zoo is large; the operationally relevant categories are few.</p>
+
+  <ul>
+    <li><strong>BitsAndBytes 4/8-bit</strong> — runtime quantization at load time; convenient, broad model coverage, works inside the Hugging Face stack. Quality is good; throughput is below dedicated formats because the kernels are less specialized.</li>
+    <li><strong>GPTQ</strong> — post-training weight-only quantization (typically 4-bit) using a calibration dataset to minimize per-layer reconstruction error. Mature, well-supported across engines, predictable quality.</li>
+    <li><strong>AWQ</strong> — Activation-aware Weight Quantization. Identifies salient weight channels (those with large activations) and protects them from aggressive quantization. Often matches or beats GPTQ at the same bit-width with faster kernels.</li>
+    <li><strong>GGUF</strong> — the file format used by llama.cpp; supports a range of K-quantization variants (<code>Q2_K</code>, <code>Q3_K</code>, <code>Q4_K_M</code>, <code>Q5_K_M</code>, <code>Q6_K</code>, <code>Q8_0</code>). <code>Q4_K_M</code> is the practical sweet spot for most models on most hardware; <code>Q5</code> recovers more quality at modest cost; <code>Q8</code> is essentially lossless.</li>
+    <li><strong>SmoothQuant</strong> — W8A8: quantizes both weights and activations to 8 bits by smoothing activation outliers into the weights. Designed for hardware that benefits from INT8 GEMMs.</li>
+    <li><strong>FP8</strong> — 8-bit floating point (E4M3 and E5M2 formats), supported on H100 and successors. The most attractive recent format because the kernels are first-class on modern hardware and quality degradation is small.</li>
+  </ul>
+
+  <p>The qualitative ordering on quality, roughly, is FP16/BF16 ≈ FP8 &gt; INT8 (W8A8) &gt; AWQ-4 ≈ GPTQ-4 ≈ GGUF Q4_K_M &gt; GGUF Q3_K &gt; GGUF Q2_K. The ordering on throughput depends entirely on hardware and engine; FP8 wins on H100/H200 where the silicon supports it natively.</p>
+
+  <figure>
+    <svg viewBox="0 0 700 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Quantization formats compared">
+      <style>
+        .ax { stroke: #4A5568; stroke-width: 1; }
+        .gl { stroke: #E5E9EF; stroke-width: 1; }
+        .lbl { font-family: Inter, sans-serif; font-size: 12px; fill: #1A1A1A; }
+        .lbl-mute { font-family: Inter, sans-serif; font-size: 12px; fill: #4A5568; }
+        .lbl-bold { font-family: Inter, sans-serif; font-size: 13px; fill: #0F2A4A; font-weight: 600; }
+        .ttl { font-family: Inter, sans-serif; font-size: 13px; fill: #0F2A4A; font-weight: 600; }
+      </style>
+
+      <!-- Title -->
+      <text x="350" y="20" class="ttl" text-anchor="middle">Quantization formats: VRAM (relative) and quality (relative)</text>
+
+      <!-- Y-axis label -->
+      <text x="20" y="180" class="lbl-mute" transform="rotate(-90 20 180)" text-anchor="middle">Format</text>
+
+      <!-- Gridlines for VRAM (left chart, 0-100%) -->
+      <line x1="180" y1="50" x2="180" y2="320" class="ax"/>
+      <line x1="220" y1="50" x2="220" y2="320" class="gl"/>
+      <line x1="260" y1="50" x2="260" y2="320" class="gl"/>
+      <line x1="300" y1="50" x2="300" y2="320" class="gl"/>
+      <line x1="340" y1="50" x2="340" y2="320" class="gl"/>
+      <line x1="380" y1="50" x2="380" y2="320" class="gl"/>
+
+      <!-- VRAM axis labels -->
+      <text x="180" y="340" class="lbl-mute" text-anchor="middle">0%</text>
+      <text x="260" y="340" class="lbl-mute" text-anchor="middle">50%</text>
+      <text x="340" y="340" class="lbl-mute" text-anchor="middle">100%</text>
+      <text x="280" y="358" class="lbl-bold" text-anchor="middle">VRAM (vs FP16)</text>
+
+      <!-- Quality axis (right) -->
+      <line x1="430" y1="50" x2="430" y2="320" class="ax"/>
+      <line x1="490" y1="50" x2="490" y2="320" class="gl"/>
+      <line x1="550" y1="50" x2="550" y2="320" class="gl"/>
+      <line x1="610" y1="50" x2="610" y2="320" class="gl"/>
+      <line x1="670" y1="50" x2="670" y2="320" class="gl"/>
+
+      <text x="430" y="340" class="lbl-mute" text-anchor="middle">low</text>
+      <text x="670" y="340" class="lbl-mute" text-anchor="middle">high</text>
+      <text x="550" y="358" class="lbl-bold" text-anchor="middle">Quality (relative)</text>
+
+      <!-- Format rows -->
+      <!-- FP16 -->
+      <text x="170" y="74" class="lbl" text-anchor="end">FP16 / BF16</text>
+      <rect x="180" y="60" width="160" height="20" fill="#0F2A4A"/>
+      <text x="345" y="74" class="lbl-mute">100%</text>
+      <rect x="430" y="60" width="240" height="20" fill="#1F6FEB"/>
+
+      <!-- FP8 -->
+      <text x="170" y="104" class="lbl" text-anchor="end">FP8 (E4M3)</text>
+      <rect x="180" y="90" width="80" height="20" fill="#0F2A4A"/>
+      <text x="265" y="104" class="lbl-mute">50%</text>
+      <rect x="430" y="90" width="232" height="20" fill="#1F6FEB"/>
+
+      <!-- INT8 / SmoothQuant -->
+      <text x="170" y="134" class="lbl" text-anchor="end">INT8 (W8A8)</text>
+      <rect x="180" y="120" width="80" height="20" fill="#0F2A4A"/>
+      <text x="265" y="134" class="lbl-mute">50%</text>
+      <rect x="430" y="120" width="216" height="20" fill="#1F6FEB"/>
+
+      <!-- AWQ-4 -->
+      <text x="170" y="164" class="lbl" text-anchor="end">AWQ 4-bit</text>
+      <rect x="180" y="150" width="48" height="20" fill="#0F2A4A"/>
+      <text x="233" y="164" class="lbl-mute">~30%</text>
+      <rect x="430" y="150" width="200" height="20" fill="#1F6FEB"/>
+
+      <!-- GPTQ-4 -->
+      <text x="170" y="194" class="lbl" text-anchor="end">GPTQ 4-bit</text>
+      <rect x="180" y="180" width="48" height="20" fill="#0F2A4A"/>
+      <text x="233" y="194" class="lbl-mute">~30%</text>
+      <rect x="430" y="180" width="196" height="20" fill="#1F6FEB"/>
+
+      <!-- GGUF Q5_K_M -->
+      <text x="170" y="224" class="lbl" text-anchor="end">GGUF Q5_K_M</text>
+      <rect x="180" y="210" width="60" height="20" fill="#0F2A4A"/>
+      <text x="245" y="224" class="lbl-mute">~38%</text>
+      <rect x="430" y="210" width="208" height="20" fill="#1F6FEB"/>
+
+      <!-- GGUF Q4_K_M -->
+      <text x="170" y="254" class="lbl" text-anchor="end">GGUF Q4_K_M</text>
+      <rect x="180" y="240" width="48" height="20" fill="#0F2A4A"/>
+      <text x="233" y="254" class="lbl-mute">~30%</text>
+      <rect x="430" y="240" width="192" height="20" fill="#1F6FEB"/>
+
+      <!-- BnB 4-bit (NF4) -->
+      <text x="170" y="284" class="lbl" text-anchor="end">BitsAndBytes NF4</text>
+      <rect x="180" y="270" width="48" height="20" fill="#0F2A4A"/>
+      <text x="233" y="284" class="lbl-mute">~30%</text>
+      <rect x="430" y="270" width="184" height="20" fill="#1F6FEB"/>
+
+      <!-- GGUF Q2_K -->
+      <text x="170" y="314" class="lbl" text-anchor="end">GGUF Q2_K</text>
+      <rect x="180" y="300" width="28" height="20" fill="#0F2A4A"/>
+      <text x="213" y="314" class="lbl-mute">~18%</text>
+      <rect x="430" y="300" width="120" height="20" fill="#1F6FEB"/>
+    </svg>
+    <figcaption>Figure 6.1 — Quantization formats compared on relative VRAM (vs FP16, lower is better) and relative quality (longer is better). Bars are illustrative; exact values depend on model, calibration data, and task.</figcaption>
+  </figure>
+
+  <h2>6.3 KV-cache techniques</h2>
+
+  <p>During autoregressive decoding, every transformer layer caches the key and value projections of every prior token; the next token attends to that cache instead of recomputing it. The cache dominates memory consumption at long contexts and is the central object of inference optimization.</p>
+
+  <h3>PagedAttention</h3>
+  <p>vLLM's signature technique. The KV cache is allocated in fixed-size blocks (pages), analogous to OS virtual memory pages, instead of contiguously per request. Pages can be allocated, freed, and shared across requests independently. This eliminates the fragmentation that plagues naive cache allocators and enables efficient batching of requests with very different sequence lengths.</p>
+
+  <h3>Prefix caching</h3>
+  <p>When many requests share a common prefix — a system prompt, a few-shot block, an agent's running context — the KV cache for that prefix can be computed once and reused. SGLang's RadixAttention generalizes this with a radix tree of cache fragments, sharing across arbitrary common subsequences, not just true prefixes. The throughput gains on prefix-heavy workloads (chat with long system prompts, agents, RAG with similar contexts) are substantial.</p>
+
+  <h3>KV reuse and quantized KV</h3>
+  <p>The KV cache itself can be quantized — INT8 or FP8 KV — at a small quality cost, doubling effective context capacity. Some engines also support KV cache offloading to CPU memory for very long contexts at a latency penalty.</p>
+
+  <h2>6.4 Speculative decoding</h2>
+
+  <p>Decode is memory-bound: each generated token requires reading the full model weights from HBM. Speculative decoding amortizes that read across multiple tokens by drafting candidate tokens cheaply and verifying them in a single forward pass.</p>
+
+  <ul>
+    <li><strong>Vanilla draft-and-verify</strong> — a small "draft" model proposes <em>k</em> tokens; the large model verifies them in parallel; accepted tokens are kept, rejected ones halt the speculation. Speedups of 2–3× are typical when the draft model is well-aligned with the target.</li>
+    <li><strong>Medusa</strong> — instead of a separate draft model, attach extra decoding heads to the target model that predict multiple future tokens simultaneously. No alignment problem because there is only one model.</li>
+    <li><strong>EAGLE / EAGLE-2</strong> — a more accurate variant of the Medusa idea that conditions extra heads on the target model's hidden states, giving higher acceptance rates and larger speedups. EAGLE-2 adds a dynamic draft-tree search.</li>
+    <li><strong>Lookahead decoding</strong> — generates draft tokens via a Jacobi-iteration scheme without any auxiliary model or training. Gains are modest but the technique requires no extra weights.</li>
+    <li><strong>Assisted generation</strong> — Hugging Face's term for the general pattern; usable with any (target, draft) pair where the drafts are plausible.</li>
+  </ul>
+
+  <p>When does speculation pay off? It helps most when the target model is large, decode is dominant (long outputs), and the workload is latency-sensitive. It helps least when batches are large enough to be compute-bound or outputs are short. A speculative-decoding deployment should always be A/B'd against a non-speculative baseline on the actual workload.</p>
+
+  <h2>6.5 Disaggregated prefill and decode</h2>
+
+  <p>Prefill (processing the prompt) and decode (generating tokens one at a time) have different computational profiles: prefill is compute-bound and parallelizable across all prompt tokens; decode is memory-bandwidth-bound and sequential. Co-locating them on the same GPUs forces compromises — long prompts starve decoders, large batches starve prompt processing.</p>
+
+  <p>Disaggregated serving runs prefill on one pool of GPUs and decode on another, transferring the resulting KV cache between them over a high-bandwidth interconnect. The architecture, pioneered by systems like DistServe and now in production-grade engines, improves utilization and lets each pool be sized for its own bottleneck. The cost is operational complexity and a non-trivial KV-transfer step.</p>
+
+  <h2>6.6 Continuous batching, chunked prefill, FlashAttention</h2>
+
+  <p><strong>Continuous batching</strong> (also called in-flight or iteration-level batching) replaces request-level static batches with token-level dynamic batches. As soon as one request finishes a token, a new request can join the batch on the next iteration. Throughput improvements on heterogeneous workloads are large; this is standard in every modern engine.</p>
+
+  <p><strong>Chunked prefill</strong> splits long prompts into chunks that are processed across multiple decoding iterations rather than monopolizing the GPU for one long prefill. This keeps decode latency for other in-flight requests bounded and dramatically improves the tail latency of mixed workloads.</p>
+
+  <p><strong>FlashAttention 2 / 3</strong> are I/O-aware exact-attention kernels that tile attention over SRAM rather than materializing the full \(QK^T\) matrix in HBM. FlashAttention-3 (2024) is tuned for Hopper architecture and exploits FP8 and asynchrony for further gains. Engines automatically pick the best available kernel for the target hardware; there is rarely a reason to override.</p>
+
+  <h2>6.7 Distillation, pruning, mixed precision</h2>
+
+  <p>Beyond quantization, two compression strategies remain relevant. <strong>Distillation</strong> trains a smaller "student" model on the outputs (logits, generations, or both) of a larger "teacher," recovering much of the teacher's quality at a fraction of the parameters. Many shipped small models — DistilBERT historically, and the small members of modern model families today — are distilled. <strong>Pruning</strong> removes weights or entire structures (heads, layers, neurons) and is typically followed by a recovery fine-tune. Structured pruning (whole heads or whole layers) preserves dense GEMM efficiency; unstructured pruning yields better quality at the same sparsity but requires sparse kernels to produce a real speedup.</p>
+
+  <p><strong>Mixed-precision serving</strong> uses different precisions for different parts of the model — e.g., FP16 weights with FP8 activations, or BF16 weights with quantized KV cache — chosen for the best quality-per-cost on the target hardware. The decisions are model- and hardware-specific; profile before standardizing.</p>
+
+  <h2>6.8 Serving stacks</h2>
+
+  <p>The engine handles the model; the serving stack handles everything around it: replication, autoscaling, routing, observability, multi-model deployment, and integration with the broader infrastructure.</p>
+
+  <ul>
+    <li><strong>BentoML</strong> — Pythonic packaging of models with declarative serving definitions; pairs well with vLLM and TGI as runtimes.</li>
+    <li><strong>Ray Serve</strong> — fits naturally when the rest of the system already runs on Ray; strong for multi-model graphs and Python-native composition.</li>
+    <li><strong>KServe</strong> — Kubernetes-native model serving with autoscaling and canarying; choose when the team is committed to Kubernetes.</li>
+    <li><strong>NVIDIA Triton Inference Server</strong> — multi-framework, multi-model server with strong batching and ensemble support; the canonical choice for TensorRT-LLM deployments.</li>
+    <li><strong>Modal, RunPod, Baseten</strong> — managed serverless GPU platforms that abstract the infrastructure entirely; good fit for teams that do not want to operate Kubernetes or autoscaling themselves.</li>
+  </ul>
+
+  <figure>
+    <div class="mermaid">
+flowchart TB
+  subgraph Edge [Request handling]
+    A[Client] --> B[API gateway]
+    B --> C[Auth + quotas]
+  end
+  subgraph Routing [Routing layer]
+    D[Model router] --> E[Load balancer]
+  end
+  subgraph Engine [Inference engine]
+    F[Continuous batcher] --> G[Forward pass]
+  end
+  subgraph Cache [KV cache]
+    H[Paged blocks] --> I[Prefix tree]
+  end
+  Edge --> Routing --> Engine --> Cache
+    </div>
+    <figcaption>Figure 6.2 — A modern inference stack stacked into four logical stages: request handling, routing, engine execution, and KV-cache management.</figcaption>
+  </figure>
+
+  <h2>6.9 Capacity planning</h2>
+
+  <p>The metrics that matter for an inference deployment are tokens-per-second per GPU (throughput), tokens-per-second per request (decode rate, the user-perceived speed), time-to-first-token (TTFT), and dollars per million tokens (the cost basis). They trade off against each other; you cannot optimize them all at once.</p>
+
+  <p>Two practical rules of thumb:</p>
+
+  <ul>
+    <li><strong>VRAM = weights + KV cache + activations + slack.</strong> Weights at 4-bit quantization are roughly half the parameter count in GB; at 8-bit, equal to it; at FP16, double. KV cache scales with batch × sequence × layers × hidden × 2 (K and V), with quantization helping linearly. Plan for 15–20% slack; the engine needs scratch space.</li>
+    <li><strong>Throughput vs latency is a knob, not a discovery.</strong> Larger batches improve throughput and degrade latency. The right operating point depends on whether the workload is interactive (chat, agents — favor latency) or asynchronous (offline batch generation — favor throughput).</li>
+  </ul>
+
+  <p>Tensor parallelism (sharding weights across GPUs by tensor) and pipeline parallelism (sharding by layer) become necessary once a model does not fit on one GPU. Tensor parallelism has higher communication cost and benefits from NVLink; pipeline parallelism tolerates lower interconnect bandwidth but introduces pipeline bubbles unless requests are pipelined. Mixed strategies are common in large deployments.</p>
+
+  <div class="callout">
+    <div class="callout-title">
+      <svg class="callout-icon" viewBox="0 0 24 24" fill="none" stroke="#1F6FEB" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+      Key idea.
+    </div>
+    Optimize the workload first, the engine second, the hardware third. Most "we need bigger GPUs" decisions reverse after measuring how much of the latency budget is spent in retrieval, tool calls, prompt construction, or oversized contexts. Profile end-to-end before scaling up the inference layer.
+  </div>
+
+  <p class="snippet-caption">Representative <code>vllm serve</code> invocation with quantization and tensor parallelism.</p>
+  <pre><span class="lang-label">Bash</span><code class="language-bash">vllm serve meta-llama/Meta-Llama-3.1-70B-Instruct \
+  --quantization awq \
+  --dtype auto \
+  --tensor-parallel-size 4 \
+  --max-model-len 32768 \
+  --gpu-memory-utilization 0.92 \
+  --enable-prefix-caching \
+  --enable-chunked-prefill \
+  --port 8000
+</code></pre>
+
+</section>
+
+<!-- ============================ MERMAID INIT + MATHJAX TYPESET ============================ -->
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'base',
+    flowchart: { useMaxWidth: true, htmlLabels: true, curve: 'basis' },
+    sequence: { useMaxWidth: true },
+    themeVariables: {
+      fontFamily: 'Inter, "Segoe UI", system-ui, sans-serif',
+      fontSize: '15px',
+      primaryColor: '#F4F6FA',
+      primaryBorderColor: '#0F2A4A',
+      primaryTextColor: '#0F2A4A',
+      lineColor: '#4A5568',
+      secondaryColor: '#FFFFFF',
+      tertiaryColor: '#E5E9EF'
+    }
+  });
+</script>
+
+<script>
+  window.addEventListener('load', function() {
+    if (window.MathJax && MathJax.typesetPromise) {
+      MathJax.typesetPromise().catch(function(err) {
+        console.error('MathJax typesetting failed:', err);
+      });
+    }
+  });
+</script>
+
+</body>
+</html>
