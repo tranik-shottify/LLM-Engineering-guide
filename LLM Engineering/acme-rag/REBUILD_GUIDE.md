@@ -9,7 +9,9 @@ Build the project from scratch, step by step.
 Use Python 3.11.
 
 ```
-python3.11 -m venv .venv
+py -3.11 -m venv .venv       # Windows
+# python3.11 -m venv .venv   # Linux/Mac
+
 .venv\Scripts\activate       # Windows
 # source .venv/bin/activate  # Linux/Mac
 ```
